@@ -164,7 +164,6 @@ func main (){
 		if err != nil {
 			fmt.Println("Get this error when retrieving results:", err)
 		}
-		fmt.Println(result)
 		statusID := gjson.Get(result, "status.id")
 		
 		switch statusID.Int() {
