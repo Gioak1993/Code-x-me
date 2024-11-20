@@ -11,8 +11,10 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/tidwall/gjson"
 )
 
 
@@ -47,7 +49,7 @@ func (r *JudgeZeroApi) GetToken () (string, string, error) {
 		
 	}
 
-	// Create de Request
+	// Create the post Request
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonDATA))
 	if err != nil {
@@ -80,8 +82,53 @@ func (r *JudgeZeroApi) GetToken () (string, string, error) {
 	if err != nil {
 		fmt.Println("Error reading the response:", err)
 	}
+	// if the status is 201, we now need to make another
+	// call with the token to get the output of the code
+	if resp.Status == "201 Created" {
+		responseData := string(body)
+		token := gjson.Get(responseData, "token")
 
+		return resp.Status, token.String(), nil
+	
+	}
 	return resp.Status, string(body), nil
+}
+
+func (r *JudgeZeroApi) GetResults (token string) (string, error)  {
+
+	// Define the url with the get request parameters 
+	responseURL := "https://judge0-ce.p.rapidapi.com/submissions/" + token
+	params := url.Values{}
+	params.Add("base64_encoded","false")
+	params.Add("fields","*")
+	fullURL := fmt.Sprintf("%s?%s", responseURL, params.Encode())
+
+	req, err := http.NewRequest("GET", fullURL, nil)
+	if err != nil {
+		fmt.Println("Error creating get request", err)
+	}
+	// Add the Headers 
+
+	req.Header.Set("X-RapidAPI-Key", os.Getenv("RapidAPI_Key"))
+	req.Header.Set("X-RapidAPI-Host", "judge0-ce.p.rapidapi.com")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+
+	if err != nil {
+		fmt.Println("Error making the get request", err)
+	}
+	defer resp.Body.Close()
+
+	//Read the response 
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading the response:", err)
+	
+		}
+
+	return string(body), nil
 }
 
 
@@ -95,14 +142,43 @@ func main (){
 	}
 	judgeAPI := JudgeZeroApi{
 		LanguageId: 92,
-		SourceCode: "print('hello world)",
+		SourceCode: "print('hello world')",
 	}
 
-	status, response, err := judgeAPI.GetToken()
+	status, token, err := judgeAPI.GetToken()
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
-	fmt.Println("Status:", status)
-	fmt.Println("API Response:", response)
+	fmt.Println(status,token)
 
+	// usually, when you run the get request the api still has not the result ready {"stdout":"null"}
+	// so you need to retry until you get the desired result,
+	// lets set a max number of tries and try again until we get something 
+
+	const maxTries int = 10
+	delay := 1 * time.Second
+
+	out: //we use this label to break the loop on the desired condition
+	for i:=1; i < maxTries; i ++ {
+		result, err := judgeAPI.GetResults(token)
+		if err != nil {
+			fmt.Println("Get this error when retrieving results:", err)
+		}
+		fmt.Println(result)
+		statusID := gjson.Get(result, "status.id")
+		
+		switch statusID.Int() {
+		case 1 , 2, 3: 
+			fmt.Println("Result not ready")
+			time.Sleep(delay)
+			continue
+		case 4:
+			output := gjson.Get(result, "stdout")
+			fmt.Println(output.String())
+			break out // when the output is ready to be shown we break the outter for loop
+		default:
+			time.Sleep(delay)
+			continue
+		}
+	}
 }
