@@ -1,7 +1,19 @@
 import Editor from '@monaco-editor/react';
-import { Dropdown } from 'flowbite-react';
+import { Dropdown, Button } from 'flowbite-react';
 import { useState } from 'react';
-import { useThemeMode } from 'flowbite-react';
+import { Card } from './Card';
+import submitCode from '../api/apiCall.ts'
+
+const options = {
+    readOnly: true, // Make the editor editable
+    lineNumbers: 'off' as const, // Show line numbers
+    minimap: {
+      enabled: false, // Enable the minimap
+    },
+    fontSize: 14, // Customize font size
+    scrollBeyondLastLine: false, // Disable scrolling beyond the last line
+};
+
 
 
 
@@ -15,9 +27,18 @@ export function CodeArea() {
         defaultLanguage : "python",
         value : "",
         language: "",
-        theme: "vs-dark"
         }
 );
+
+    const [output, setOutput] = useState({
+        
+        value : "",
+        memory : "",
+        message: "",
+        status: "",
+        time: "",
+
+    })
 
     //define the types for the languages 
     type Language = {
@@ -62,36 +83,58 @@ export function CodeArea() {
     function handleCodeChange (newValue:string|undefined){
         if (newValue !== undefined) {
             setEditor({...editor, value:newValue});
-
         }
     }
     // when a language is selected on the dropdown, the editor language change so it can give better recommendations
     // we also change the language id which is needed for the api
-    
+
     function handleLanguageChange (newLanguage:string|undefined, newLanguageId:number|undefined) {
         if (newLanguage !== undefined && newLanguageId !== undefined) {
             setEditor({...editor, language:newLanguage.toLowerCase(), languageId:newLanguageId});
-            console.log(newLanguage.toLowerCase(), newLanguageId)
+        }
+    }
+
+    async function handleOutputChange() {
+        try {
+            const result = await submitCode (editor.value, editor.languageId);
+            console.log(result)
+            setOutput({...output, value:result.Output}); // display this in your UI
+        } catch (error) {
+            console.log(error)
+            setOutput({...output, value:"Error submitting code."});
         }
     }
     
     return (
-        <>
-            <Dropdown label="dropdown-language" inline className=''>
-                {languagesList.map((language) => 
-                <Dropdown.Item key={language.id} onClick={() => handleLanguageChange(language.name, language.id)} >{language.name}</Dropdown.Item>
-                    )
-                }
-            </Dropdown>
+        <Card className='grid m-2'>
+            <Card className='flex m-2'>
+                <Dropdown className='mx-1' label ={`Language: ${editor.language.toUpperCase() || "Select"}`} >
+                    {languagesList.map((language) => 
+                    <Dropdown.Item key={language.id} onClick={() => handleLanguageChange(language.name, language.id)} >{language.name}</Dropdown.Item>
+                        )
+                    }
+                </Dropdown>
+                <Button className='mx-1' onClick={handleOutputChange}>Run</Button>
+            </Card>
+            <Card className='grid grid-cols-1 md:grid-cols-2 mx-2'>
                 <Editor
-                className ="min-h-full"
+                className ="min-h-full m-2"
                 height="90vh"
-                defaultLanguage ={editor.defaultLanguage}
-                defaultValue = {editor.defaultValue}
                 language={editor.language}
-                theme='vs-dark'
+                value={editor.value}
+                theme="vs-dark"
                 onChange={handleCodeChange}
                 />
-        </>
+                <Editor
+                className='min-h-full m-2'
+                height="90vh"
+                theme="vs-dark"
+                options={options}
+                value={output.value} 
+                
+                />
+
+            </Card>
+        </Card>
             )
         }

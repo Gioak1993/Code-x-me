@@ -1,31 +1,32 @@
 // Script to get the result of the source code send trought the JUDGE0 API
 
-package main
+package api
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/joho/godotenv"
-	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/joho/godotenv"
+	"github.com/tidwall/gjson"
 )
 
 type JudgeZeroApi struct {
-	LanguageId int
-	SourceCode string
+	LanguageId int    //language id from the request
+	SourceCode string // source code from the user
 }
 
 func (r *JudgeZeroApi) GetToken() (string, string, error) {
 
 	// Define the URL with query parameters
 
-	baseURL := "https://judge0-ce.p.rapidapi.com/submissions"
+	baseURL := "https://judge0-ce.p.sulu.sh/submissions"
 	params := url.Values{}
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
@@ -37,7 +38,6 @@ func (r *JudgeZeroApi) GetToken() (string, string, error) {
 	payload := map[string]string{
 		"language_id":     strconv.Itoa(r.LanguageId),
 		"source_code":     r.SourceCode,
-		"callback_url":    "https://codexme.reflex.run/",
 		"expected_output": "null",
 	}
 
@@ -55,14 +55,15 @@ func (r *JudgeZeroApi) GetToken() (string, string, error) {
 	}
 
 	// Add Headers
-	apiKey := os.Getenv("RapidAPI_Key")
+	apiKey := os.Getenv("SuluToken")
 	if apiKey == "" {
 		fmt.Println("Api Key not set")
 	}
 
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set("X-RapidAPI-Key", os.Getenv("RapidAPI_Key"))
-	req.Header.Set("X-RapidAPI-Host", "judge0-ce.p.rapidapi.com")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Set("Authorization", "Bearer " + os.Getenv("SuluToken"))
+
 
 	//do the request
 
@@ -95,7 +96,7 @@ func (r *JudgeZeroApi) GetToken() (string, string, error) {
 func (r *JudgeZeroApi) GetResults(token string) (string, error) {
 
 	// Define the url with the get request parameters
-	responseURL := "https://judge0-ce.p.rapidapi.com/submissions/" + token
+	responseURL := "https://judge0-ce.p.sulu.sh//submissions/" + token
 	params := url.Values{}
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
@@ -107,8 +108,8 @@ func (r *JudgeZeroApi) GetResults(token string) (string, error) {
 	}
 	// Add the Headers
 
-	req.Header.Set("X-RapidAPI-Key", os.Getenv("RapidAPI_Key"))
-	req.Header.Set("X-RapidAPI-Host", "judge0-ce.p.rapidapi.com")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Authorization", "Bearer " + os.Getenv("SuluToken"))
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -129,17 +130,18 @@ func (r *JudgeZeroApi) GetResults(token string) (string, error) {
 	return string(body), nil
 }
 
-func main() {
+func JudgeZero(languageId int, sourceCode string) interface{} {
 
 	// Load environment variables from the parent directory
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		fmt.Println("Error loading .env file:", err)
-		return
+		return ("Error: ")
+
 	}
 	judgeAPI := JudgeZeroApi{
-		LanguageId: 92,
-		SourceCode: "print('hello world')",
+		LanguageId: languageId,
+		SourceCode: sourceCode,
 	}
 
 	status, token, err := judgeAPI.GetToken()
@@ -155,13 +157,16 @@ func main() {
 	const maxTries int = 10
 	delay := 1 * time.Second
 
-out: //we use this label to break the loop on the desired condition
+	//we use this label to break the loop on the desired condition
 	for i := 1; i < maxTries; i++ {
 		result, err := judgeAPI.GetResults(token)
 		if err != nil {
 			fmt.Println("Get this error when retrieving results:", err)
 		}
 		statusID := gjson.Get(result, "status.id")
+		output := gjson.Get(result, "stdout")
+		executionTime := gjson.Get(result, "time")
+		memory := gjson.Get(result, "memory")
 
 		switch statusID.Int() {
 		case 1, 2, 3:
@@ -169,12 +174,22 @@ out: //we use this label to break the loop on the desired condition
 			time.Sleep(delay)
 			continue
 		case 4:
-			output := gjson.Get(result, "stdout")
+
 			fmt.Println(output.String())
-			break out // when the output is ready to be shown we break the outter for loop
+			results := map[string]string{
+				"Status":  "success",
+				"Output":  output.String(),
+				"Time":    executionTime.String(),
+				"Memory":  memory.String(),
+				"Message": "code executed successfully",
+			}
+
+			return results // when the output is ready to be shown we return the response
 		default:
 			time.Sleep(delay)
 			continue
 		}
+
 	}
+	return ("Error trying to get the output")
 }
