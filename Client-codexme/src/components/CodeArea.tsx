@@ -1,7 +1,9 @@
+"use client";
+
 import Editor from '@monaco-editor/react';
 import { Dropdown, Button } from 'flowbite-react';
 import { useState } from 'react';
-import { Card } from './Card';
+import { Card } from './Card.tsx';
 import submitCode from '../api/apiCall.ts'
 
 const options = {
@@ -106,34 +108,38 @@ export function CodeArea() {
     }
     
     return (
-        <Card className='grid m-2'>
+        <Card className='grid m-2 '>
             <Card className='flex m-2'>
-                <Dropdown className='mx-1' label ={`Language: ${editor.language.toUpperCase() || "Select"}`} >
+                <Dropdown color='blue' className='mx-1' label ={`Language: ${editor.language.toUpperCase() || "Select"}`} >
                     {languagesList.map((language) => 
                     <Dropdown.Item key={language.id} onClick={() => handleLanguageChange(language.name, language.id)} >{language.name}</Dropdown.Item>
                         )
                     }
                 </Dropdown>
-                <Button className='mx-1' onClick={handleOutputChange}>Run</Button>
+                <Button color='blue' className='mx-1' onClick={handleOutputChange}>Run</Button>
             </Card>
             <Card className='grid grid-cols-1 md:grid-cols-2 mx-2'>
-                <Editor
-                className ="min-h-full m-2"
-                height="90vh"
-                language={editor.language}
-                value={editor.value}
-                theme="vs-dark"
-                onChange={handleCodeChange}
-                />
-                <Editor
-                className='min-h-full m-2'
-                height="90vh"
-                theme="vs-dark"
-                options={options}
-                value={output.value} 
-                
-                />
-
+                <Card className='grid grid-cols-1 m-2'>
+                    <span className='text-3xl font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900'>Input</span>
+                    <Editor
+                    className ="min-h-full"
+                    height="90vh"
+                    language={editor.language}
+                    value={editor.value}
+                    theme="vs-dark"
+                    onChange={handleCodeChange}
+                    />
+                </Card>
+                <Card className='grid grid-cols-1 m-2'>
+                    <span className='text-3xl font-light tracking-tight text-gray-900 dark:text-white bg-white dark:bg-gray-900'>Output</span>
+                    <Editor
+                    className='min-h-full '
+                    height="90vh"
+                    theme="vs-dark"
+                    options={options}
+                    value={output.value} 
+                    />
+                 </Card>
             </Card>
         </Card>
             )

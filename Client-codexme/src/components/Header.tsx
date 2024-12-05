@@ -1,26 +1,28 @@
 
-import { Button, Navbar, NavbarBrand, NavbarCollapse, NavbarLink, NavbarToggle, DarkThemeToggle } from "flowbite-react";
+import { Button, Navbar, DarkThemeToggle } from "flowbite-react";
 
 
 export function Header() {
     return (
         <Navbar className="top-0 min-w-full" fluid rounded>
-        <NavbarBrand href="https://flowbite-react.com">
-            {/* <img src="/favicon.svg" className="mr-3 h-6 sm:h-9" alt="Flowbite React Logo" /> */}
+        <Navbar.Brand href="/">
+            <img src="/owl.svg" className="mr-3 h-6 sm:h-9" alt="CodexME Logo" />
             <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">CodexME</span>
-        </NavbarBrand>
+        </Navbar.Brand>
         <div className="flex md:order-2 p-1">
             <DarkThemeToggle></DarkThemeToggle>
-            <Button>Get started</Button>
-            <NavbarToggle />
+            <a  href="/login">
+            <Button color='blue'>Sign In</Button>
+            </a>
+            <Navbar.Toggle/>
         </div>
-        <NavbarCollapse>
-            <NavbarLink href="/" active>
+        <Navbar.Collapse className="items-center">
+            <Navbar.Link href="/" >
             Home
-            </NavbarLink>
-            <NavbarLink href="/playground">Playground</NavbarLink>
-            <NavbarLink href="#">Challenges</NavbarLink>
-        </NavbarCollapse>
+            </Navbar.Link>
+            <Navbar.Link href="/playground">Playground</Navbar.Link>
+            <Navbar.Link href="#">Challenges</Navbar.Link>
+        </Navbar.Collapse>
         </Navbar>
     );
     }
