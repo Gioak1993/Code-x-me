@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Gioak1993/Code-x-me/api"
+	"github.com/Gioak1993/Code-x-me/data"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -15,6 +16,13 @@ type CodeSubmission struct {
 }
 
 func main() {
+	
+	data.DbConnect()
+
+}
+
+func apiRun () {
+
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
@@ -50,4 +58,5 @@ func main() {
 	})
 
 	r.Run("localhost:8080") // listen and serve on 0.0.0.0:8080
+
 }
