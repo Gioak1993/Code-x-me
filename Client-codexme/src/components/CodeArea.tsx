@@ -4,7 +4,7 @@ import Editor from '@monaco-editor/react';
 import { Dropdown, Button } from 'flowbite-react';
 import { useState } from 'react';
 import { Card } from './Card.tsx';
-import submitCode from '../api/apiCall.ts'
+import submitCode from '../api/submitCode.tsx'
 
 const options = {
     readOnly: true, // Make the editor editable
@@ -46,39 +46,148 @@ export function CodeArea() {
     type Language = {
         name: string;
         id: number;
+        function: string;
     };
 
     //define an array for the programming languages
 
     const languagesList: Language[] = [
-        { name: "Python", id: 92 },
-        { name: "Javascript", id: 93 },
-        { name: "TypeScript", id: 94 },
-        { name: "Swift", id: 83 },
-        { name: "Assembly", id: 45 },
-        { name: "Bash", id: 46 },
-        { name: "C", id: 75 },
-        { name: "C++", id: 76 },
-        { name: "C#", id: 51 },
-        { name: "COBOL", id: 77 },
-        { name: "D", id: 56 },
-        { name: "Dart", id: 90 },
-        { name: "Elixir", id: 57 },
-        { name: "Erlang", id: 58 },
-        { name: "F#", id: 87 },
-        { name: "Fortran", id: 59 },
-        { name: "Go", id: 95 },
-        { name: "Grovy", id: 88 },
-        { name: "Haskell", id: 61 },
-        { name: "Kotlin", id: 78 },
-        { name: "Lua", id: 64 },
-        { name: "Objective-C", id: 79 },
-        { name: "Octave", id: 66 },
-        { name: "Perl", id: 85 },
-        { name: "R", id: 80 },
-        { name: "Ruby", id: 72 },
-        { name: "Scala", id: 81 },
-    ];
+    { 
+        name: "Python", 
+        id: 92, 
+        function: `def solution():\n    # Write your solution here\n    pass` 
+    },
+    { 
+        name: "Javascript", 
+        id: 93, 
+        function: `function solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "TypeScript", 
+        id: 94, 
+        function: `function solution(): void {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "Swift", 
+        id: 83, 
+        function: `func solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "Assembly", 
+        id: 45, 
+        function: `; Assembly solution\nsolution:\n    ; Write your solution here`
+    },
+    { 
+        name: "Bash", 
+        id: 46, 
+        function: `solution() {\n    # Write your solution here\n}`
+    },
+    { 
+        name: "C", 
+        id: 75, 
+        function: `void solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "C++", 
+        id: 76, 
+        function: `void solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "C#", 
+        id: 51, 
+        function: `void Solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "COBOL", 
+        id: 77, 
+        function: `IDENTIFICATION DIVISION.\nPROGRAM-ID. SOLUTION.\nPROCEDURE DIVISION.\n    DISPLAY "Write your solution here".\n    STOP RUN.`
+    },
+    { 
+        name: "D", 
+        id: 56, 
+        function: `void solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "Dart", 
+        id: 90, 
+        function: `void solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "Elixir", 
+        id: 57, 
+        function: `defmodule Solution do\n  def solution do\n    # Write your solution here\n  end\nend`
+    },
+    { 
+        name: "Erlang", 
+        id: 58, 
+        function: `solution() ->\n    %% Write your solution here\n    ok.`
+    },
+    { 
+        name: "F#", 
+        id: 87, 
+        function: `let solution() =\n    // Write your solution here`
+    },
+    { 
+        name: "Fortran", 
+        id: 59, 
+        function: `PROGRAM Solution\n    PRINT *, "Write your solution here"\nEND PROGRAM Solution`
+    },
+    { 
+        name: "Go", 
+        id: 95, 
+        function: `package main\n\nimport "fmt"\n\nfunc Solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "Grovy", 
+        id: 88, 
+        function: `def solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "Haskell", 
+        id: 61, 
+        function: `solution :: IO ()\nsolution = do\n    -- Write your solution here`
+    },
+    { 
+        name: "Kotlin", 
+        id: 78, 
+        function: `fun solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "Lua", 
+        id: 64, 
+        function: `function solution()\n    -- Write your solution here\nend`
+    },
+    { 
+        name: "Objective-C", 
+        id: 79, 
+        function: `void solution() {\n    // Write your solution here\n}`
+    },
+    { 
+        name: "Octave", 
+        id: 66, 
+        function: `function solution()\n    % Write your solution here\nend`
+    },
+    { 
+        name: "Perl", 
+        id: 85, 
+        function: `sub solution {\n    # Write your solution here\n}`
+    },
+    { 
+        name: "R", 
+        id: 80, 
+        function: `solution <- function() {\n    # Write your solution here\n}`
+    },
+    { 
+        name: "Ruby", 
+        id: 72, 
+        function: `def solution\n    # Write your solution here\nend`
+    },
+    { 
+        name: "Scala", 
+        id: 81, 
+        function: `def solution(): Unit = {\n    // Write your solution here\n}`
+    },
+];
     
     //set the state for changes on the code in the editor 
 

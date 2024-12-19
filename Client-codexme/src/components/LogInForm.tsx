@@ -1,6 +1,38 @@
 import { Button, Label, TextInput, Checkbox } from "flowbite-react";
+import  SubmitLogIn  from "../api/logInRequest"
+import { useState } from "react";
 
 export function BackgroundImageLoginForm() {
+
+    const [formData, setFormData] = useState ({
+
+      Email : "",
+      Password : ""
+
+    })
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+      const { name, value } = e.target ;
+      setFormData ((prevData) => ({
+        ...prevData,
+        [name]: value,
+      }));
+      console.log(formData)
+
+    };
+
+    function handleSubmit (event: React.FormEvent<HTMLFormElement>)  {
+
+      event.preventDefault()
+  
+      SubmitLogIn(formData)
+  
+      console.log(formData)
+    };
+
+    
+
     return (
       <section className=" bg-gradient-to-r from-rose-100 to-teal-100 dark:from-gray-900 dark:to-indigo-900 bg-cover bg-center bg-no-repeat bg-blend-multiply">
         <div className="pt:mt-0 mx-auto flex flex-col items-center justify-center px-6 py-8 md:h-screen">
@@ -20,16 +52,18 @@ export function BackgroundImageLoginForm() {
               <h1 className="text-center text-xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white md:text-2xl">
                 Sign in to your account
               </h1>
-              <form className="space-y-4 md:space-y-6" action="#">
+              <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
                 <div>
                   <Label htmlFor="email" className="mb-2 block dark:text-white">
                     Your email
                   </Label>
                   <TextInput
                     id="email"
+                    name="Email"
                     placeholder="name@company.com"
                     required
                     type="email"
+                    onChange={handleChange}
                   />
                 </div>
                 <div>
@@ -41,9 +75,11 @@ export function BackgroundImageLoginForm() {
                   </Label>
                   <TextInput
                     id="confirm-password"
+                    name="Password"
                     placeholder="••••••••"
                     required
                     type="password"
+                    onChange={handleChange}
                   />
                 </div>
                 <div className="flex items-center justify-between">

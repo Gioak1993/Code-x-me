@@ -1,8 +1,44 @@
+"use client";
 
-import { Button, Checkbox, Label, Select, TextInput } from "flowbite-react";
+
+import { Button, Checkbox, Label, TextInput } from "flowbite-react";
+import { useState } from "react";
+import submitSignUpForm from "../api/signUpRequest.tsx"
 
 
 export function BackgroundImageRegisterForm() {
+
+  const [formData, setFormData] = useState({
+    Username: "",
+    Email: "",
+    Password: "",
+    ConfirmPassword: "",
+  });
+
+  // Handle input changes dynamically
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+    console.log(e.target.name, e.target.value)
+  };
+
+  function handleSubmit (event: React.FormEvent<HTMLFormElement>)  {
+    event.preventDefault()
+
+    if (formData.Password != formData.ConfirmPassword) {
+      alert('passwords do not match')
+      return ("The passwords didnt match")
+    }
+
+    submitSignUpForm(formData)
+
+    console.log(formData)
+
+}
+
   return (
     <section className="bg-gradient-to-b from-rose-100 to-teal-100 dark:from-gray-900 dark:to-indigo-900 bg-cover bg-center bg-no-repeat bg-blend-multiply">
       <div className="pt:mt-0 mx-auto flex flex-col items-center justify-center px-6 py-8 md:h-screen">
@@ -22,28 +58,42 @@ export function BackgroundImageRegisterForm() {
             <h2 className="text-center text-xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white md:text-2xl">
               Create your Free Account
             </h2>
-            <form className="space-y-4 md:space-y-6" action="#">
+            <form className="space-y-4 md:space-y-6" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-2">
+                <Label htmlFor="username" className="dark:text-white">
+                  User Name
+                </Label>
+                <TextInput 
+                  id="username"
+                  name="Username"
+                  placeholder="Your Username"
+                  required
+                  onChange={handleChange}
+                />
+              </div>
               <div className="grid grid-cols-1 gap-2">
                 <Label htmlFor="email" className="dark:text-white">
                   Your email
                 </Label>
                 <TextInput
                   id="email"
-                  name="email"
+                  name="Email"
                   placeholder="name@company.com"
                   required
                   type="email"
+                  onChange={handleChange}
                 />
               </div>
               <div className="grid grid-cols-1 gap-2">
-                <Label htmlFor="username" className="dark:text-white">
+                <Label htmlFor="password" className="dark:text-white">
                   Password
                 </Label>
                 <TextInput
-                  id="username"
-                  name="username"
+                  id="password"
+                  name="Password"
                   placeholder="••••••••"
                   required
+                  onChange={handleChange}
                 />
               </div>
               <div className="grid grid-cols-1 gap-2">
@@ -52,67 +102,14 @@ export function BackgroundImageRegisterForm() {
                 </Label>
                 <TextInput
                   id="confirm-password"
-                  name="confirm-password"
+                  name="ConfirmPassword"
                   placeholder="••••••••"
                   required
                   type="confirm-password"
+                  onChange={handleChange}
                 />
               </div>
-              <div className="grid grid-cols-1 gap-2">
-                <p className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
-                  Birth Date
-                </p>
-                <div className="flex items-center">
-                  <div className="mr-4 w-full">
-                    <Label htmlFor="day" className="sr-only dark:text-white">
-                      Day
-                    </Label>
-                    <Select id="day">
-                      <option selected>Day</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                      <option value="6">6</option>
-                      <option value="7">7</option>
-                      <option value="8">8</option>
-                    </Select>
-                  </div>
-                  <div className="mr-4 w-full">
-                    <Label htmlFor="month" className="sr-only">
-                      Month
-                    </Label>
-                    <Select id="month">
-                      <option selected>Month</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                      <option value="6">6</option>
-                      <option value="7">7</option>
-                      <option value="8">8</option>
-                    </Select>
-                  </div>
-                  <div className="w-full">
-                    <Label htmlFor="year" className="sr-only">
-                      Year
-                    </Label>
-                    <Select id="year">
-                      <option selected>Year</option>
-                      <option value="1990">1990</option>
-                      <option value="1991">1991</option>
-                      <option value="1992">1992</option>
-                      <option value="1993">1993</option>
-                      <option value="1994">1994</option>
-                      <option value="1995">1995</option>
-                      <option value="1996">1996</option>
-                      <option value="1997">1997</option>
-                    </Select>
-                  </div>
-                </div>
-              </div>
+              
               <div className="flex items-start">
                 <div className="flex h-5 items-center">
                   <Checkbox

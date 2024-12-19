@@ -1,62 +1,54 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"code-x-me/server/controllers"
+	"code-x-me/server/initializers"
+	"code-x-me/server/middleware"
+	"context"
+	"log"
 
-	"github.com/Gioak1993/Code-x-me/api"
-	"github.com/Gioak1993/Code-x-me/data"
+	// "time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
-type CodeSubmission struct {
-	SourceCode string `json:"source_code"`
-	LanguageId int    `json:"language_id"`
+func init() {
+
+	initializers.LoadEnvVariables()
+	initializers.DbConnect()
+
 }
 
 func main() {
-	
-	data.DbConnect()
-
-}
-
-func apiRun () {
 
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"http://localhost:5173"}, // Replace with your React app URL
-        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-        AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-        AllowCredentials: true,
-    }))
+		AllowOrigins:     []string{"http://localhost:5173"}, // Replace with your React app URL
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 
-	r.GET("/ping", func(c *gin.Context) {
+	r.POST("/submission", controllers.Submission)
 
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	r.POST("/signup", controllers.SignUp)
 
-	r.POST("/submissionn", func(c *gin.Context) {
-		var submission CodeSubmission
+	r.POST("/login", controllers.Login)
 
-		// Bind JSON payload to the struct
+	r.GET("/logout", controllers.LogOut)
 
-		if err := c.BindJSON(&submission); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
-			return
+	r.GET("/validate", middleware.RequireAuth, controllers.Validate)
+
+	r.POST("/batch", controllers.SubmissionBatch)
+
+	r.Run("localhost:3000") // listen and serve on 0.0.0.0:3000
+
+	defer func() {
+		if err := initializers.DBClient.Disconnect(context.TODO()); err != nil {
+			log.Fatal(err)
 		}
-
-		//log the received data
-		fmt.Printf("Received: %+v\n", submission)
-		result := api.JudgeZero(submission.LanguageId, submission.SourceCode)
-
-		c.JSON(http.StatusOK, result)
-
-	})
-
-	r.Run("localhost:8080") // listen and serve on 0.0.0.0:8080
+	}()
 
 }

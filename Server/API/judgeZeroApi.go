@@ -13,16 +13,61 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/tidwall/gjson"
 )
 
-type JudgeZeroApi struct {
-	LanguageId int    //language id from the request
-	SourceCode string // source code from the user
+var client *http.Client
+
+func init() {
+	client = &http.Client{}
 }
 
-func (r *JudgeZeroApi) GetToken() (string, string, error) {
+type Status struct {
+	ID          int    `json:"id"`
+	Description string `json:"description"`
+}
+
+type Language struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+type RequestsJudgeZeroApi struct {
+	SourceCode                           string `json:"source_code"`
+	LanguageID                           int    `json:"language_id"`
+	CompilerOptions                      string `json:"compiler_options,omitempty"`
+	CommandLineArguments                 string `json:"command_line_arguments,omitempty"`
+	Stdin                                string `json:"stdin,omitempty"`
+	ExpectedOutput                       string `json:"expected_output,omitempty"`
+	CPUTimeLimit                         string `json:"cpu_time_limit,omitempty"`
+	CPUExtraTime                         string `json:"cpu_extra_time,omitempty"`
+	MemoryLimit                          int    `json:"memory_limit,omitempty"`
+	StackLimit                           int    `json:"stack_limit,omitempty"`
+	MaxProcessesAndOrThreads             int    `json:"max_processes_and_or_threads,omitempty"`
+	EnablePerProcessAndThreadTimeLimit   bool   `json:"enable_per_process_and_thread_time_limit,omitempty"`
+	EnablePerProcessAndThreadMemoryLimit bool   `json:"enable_per_process_and_thread_memory_limit,omitempty"`
+	MaxFileSize                          int    `json:"max_file_size,omitempty"`
+	RedirectStderrToStdout               bool   `json:"redirect_stderr_to_stdout,omitempty"`
+	EnableNetwork                        bool   `json:"enable_network,omitempty"`
+	NumberOfRuns                         int    `json:"number_of_runs,omitempty"`
+	AdditionalFiles                      string `json:"additional_files,omitempty"`
+	CallbackURL                          string `json:"callback_url,omitempty"`
+	Stdout                               string `json:"stdout,omitempty"`
+	Stderr                               string `json:"stderr,omitempty"`
+	CompileOutput                        string `json:"compile_output,omitempty"`
+	Message                              string `json:"message,omitempty"`
+	ExitCode                             int    `json:"exit_code,omitempty"`
+	ExitSignal                           int    `json:"exit_signal,omitempty"`
+	Status                               string `json:"status,omitempty"`
+	CreatedAt                            string `json:"created_at,omitempty"`
+	FinishedAt                           string `json:"finished_at,omitempty"`
+	Token                                string `json:"token,omitempty"`
+	Time                                 string `json:"time,omitempty"`
+	WallTime                             string `json:"wall_time,omitempty"`
+	Memory                               int    `json:"memory,omitempty"`
+}
+
+func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	// Define the URL with query parameters
 
@@ -36,7 +81,7 @@ func (r *JudgeZeroApi) GetToken() (string, string, error) {
 	// Prepare the JSON payload
 
 	payload := map[string]string{
-		"language_id":     strconv.Itoa(r.LanguageId),
+		"language_id":     strconv.Itoa(r.LanguageID),
 		"source_code":     r.SourceCode,
 		"expected_output": "null",
 	}
@@ -62,12 +107,10 @@ func (r *JudgeZeroApi) GetToken() (string, string, error) {
 
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer " + os.Getenv("SuluToken"))
-
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("SuluToken"))
 
 	//do the request
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -93,7 +136,7 @@ func (r *JudgeZeroApi) GetToken() (string, string, error) {
 	return resp.Status, string(body), nil
 }
 
-func (r *JudgeZeroApi) GetResults(token string) (string, error) {
+func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
 
 	// Define the url with the get request parameters
 	responseURL := "https://judge0-ce.p.sulu.sh//submissions/" + token
@@ -109,9 +152,8 @@ func (r *JudgeZeroApi) GetResults(token string) (string, error) {
 	// Add the Headers
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer " + os.Getenv("SuluToken"))
+	req.Header.Add("Authorization", "Bearer "+os.Getenv("SuluToken"))
 
-	client := &http.Client{}
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -132,15 +174,8 @@ func (r *JudgeZeroApi) GetResults(token string) (string, error) {
 
 func JudgeZero(languageId int, sourceCode string) interface{} {
 
-	// Load environment variables from the parent directory
-	err := godotenv.Load(".env")
-	if err != nil {
-		fmt.Println("Error loading .env file:", err)
-		return ("Error: ")
-
-	}
-	judgeAPI := JudgeZeroApi{
-		LanguageId: languageId,
+	judgeAPI := RequestsJudgeZeroApi{
+		LanguageID: languageId,
 		SourceCode: sourceCode,
 	}
 
@@ -154,8 +189,8 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 	// so you need to retry until you get the desired result,
 	// lets set a max number of tries and try again until we get something
 
-	const maxTries int = 10
-	delay := 1 * time.Second
+	const maxTries int = 100
+	delay := 10 * time.Millisecond
 
 	//we use this label to break the loop on the desired condition
 	for i := 1; i < maxTries; i++ {
@@ -167,23 +202,24 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 		output := gjson.Get(result, "stdout")
 		executionTime := gjson.Get(result, "time")
 		memory := gjson.Get(result, "memory")
+		expected_output := gjson.Get(result, "expected_output")
 
 		switch statusID.Int() {
-		case 1, 2, 3:
+		case 1, 2:
 			fmt.Println("Result not ready")
 			time.Sleep(delay)
 			continue
-		case 4:
-
+		case 3, 4:
 			fmt.Println(output.String())
 			results := map[string]string{
-				"Status":  "success",
-				"Output":  output.String(),
-				"Time":    executionTime.String(),
-				"Memory":  memory.String(),
-				"Message": "code executed successfully",
+				"Status":         "success",
+				"Output":         output.String(),
+				"Time":           executionTime.String(),
+				"Memory":         memory.String(),
+				"Message":        "code executed successfully",
+				"ExpectedOutput": expected_output.String(),
 			}
-
+			fmt.Println(result)
 			return results // when the output is ready to be shown we return the response
 		default:
 			time.Sleep(delay)
