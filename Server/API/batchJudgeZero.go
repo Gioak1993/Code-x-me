@@ -16,7 +16,7 @@ import (
 )
 
 type BatchSubmission struct {
-	Submission []RequestsJudgeZeroApi `json:"submissions"`
+	Submissions []RequestsJudgeZeroApi `json:"submissions"`
 }
 
 // Define a struct to map the JSON tokens
@@ -35,7 +35,7 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 
 	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 
-	payload := BatchSubmission{Submission: submissions}
+	payload := BatchSubmission{Submissions: submissions}
 	jsonDATA, err := json.Marshal(payload)
 
 	if err != nil {
@@ -145,7 +145,7 @@ func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
 func BatchJudgeZero(batch []RequestsJudgeZeroApi) interface{} {
 
 	batchJudgeApi := BatchSubmission{
-		Submission: batch,
+		Submissions: batch,
 	}
 
 	tokens, err := batchJudgeApi.GetBatchToken(batch)

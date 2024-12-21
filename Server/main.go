@@ -7,8 +7,6 @@ import (
 	"context"
 	"log"
 
-	// "time"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -42,6 +40,14 @@ func main() {
 	r.GET("/validate", middleware.RequireAuth, controllers.Validate)
 
 	r.POST("/batch", controllers.SubmissionBatch)
+
+	r.GET("/challenge/:id", controllers.GetChallenge)
+
+	r.GET("/challenges", controllers.GetChallenges)
+
+	r.POST("/newchallenge", controllers.CreateChallenge)
+
+	r.POST("/submitchallenge", controllers.SubmitChallenge)
 
 	r.Run("localhost:3000") // listen and serve on 0.0.0.0:3000
 

@@ -7,40 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-type TestCase struct {
-	Input          []interface{} `bson:"input" json:"input"` // Generic array for multiple input types
-	ExpectedOutput interface{}   `bson:"expected_output" json:"expected_output"`
-}
-
-type CodeChallenge struct {
-	ID                 primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	ProblemName        string             `bson:"problem_name" json:"problem_name"`
-	ProblemExplanation string             `bson:"problem_explanation" json:"problem_explanation"`
-	InputsOutputs      []TestCase         `bson:"inputs" json:"inputs"` // JSON string
-	Constraints        string             `bson:"constraints" json:"constraints"`
-	Difficulty         string             `bson:"difficulty" json:"difficulty"`
-}
-
-type UserSubmission struct {
-	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id"`
-	UserID         string             `bson:"user_id" json:"user_id"`
-	ChallengeID    primitive.ObjectID `bson:"challenge_id" json:"challenge_id"`
-	SourceCode     string             `bson:"source_code" json:"source_code"`
-	LanguageId     int                `bson:"language_id" json:"language_id"`
-	SubmissionTime primitive.DateTime `bson:"submission_time" json:"submission_time"`
-	IsCorrect      bool               `bson:"is_correct" json:"is_correct"`
-}
-
-type UserSubmissionBatch struct {
-	Submissions []UserSubmission `json:"submissions"`
-}
 
 func Submission(c *gin.Context) {
 
-	var submission UserSubmission
+	var submission api.RequestsJudgeZeroApi
 
 	// Bind JSON payload to the struct
 
@@ -53,7 +24,7 @@ func Submission(c *gin.Context) {
 	fmt.Printf("Received: %+v\n", submission)
 
 	// send the request to de Judge0 Api
-	result := api.JudgeZero(submission.LanguageId, submission.SourceCode)
+	result := api.JudgeZero(submission.LanguageID, submission.SourceCode)
 
 	// get the results
 	c.JSON(http.StatusOK, result)
@@ -62,7 +33,7 @@ func Submission(c *gin.Context) {
 
 func SubmissionBatch(c *gin.Context) {
 
-	var batch UserSubmissionBatch
+	var batch api.BatchSubmission
 
 	// Bind JSON payload to the struct
 
@@ -78,8 +49,26 @@ func SubmissionBatch(c *gin.Context) {
 	var submissions []api.RequestsJudgeZeroApi
 	for _, s := range batch.Submissions {
 		submissions = append(submissions, api.RequestsJudgeZeroApi{
-			LanguageID: s.LanguageId,
-			SourceCode: s.SourceCode,
+			SourceCode:                           s.SourceCode,
+			LanguageID:                           s.LanguageID,
+			CompilerOptions:                      s.CompilerOptions,
+			CommandLineArguments:                 s.CommandLineArguments,
+			Stdin:                                s.Stdin,
+			ExpectedOutput:                       s.ExpectedOutput,
+			CPUTimeLimit:                         s.CPUTimeLimit,
+			CPUExtraTime:                         s.CPUExtraTime,
+			WallTimeLimit:                        s.WallTimeLimit,
+			MemoryLimit:                          s.MemoryLimit,
+			StackLimit:                           s.StackLimit,
+			MaxProcessesAndOrThreads:             s.MaxProcessesAndOrThreads,
+			EnablePerProcessAndThreadTimeLimit:   s.EnablePerProcessAndThreadTimeLimit,
+			EnablePerProcessAndThreadMemoryLimit: s.EnablePerProcessAndThreadMemoryLimit,
+			MaxFileSize:                          s.MaxFileSize,
+			RedirectStderrToStdout:               s.RedirectStderrToStdout,
+			EnableNetwork:                        s.EnableNetwork,
+			NumberOfRuns:                         s.NumberOfRuns,
+			AdditionalFiles:                      s.AdditionalFiles,
+			CallbackURL:                          s.CallbackURL,
 		})
 	}
 
