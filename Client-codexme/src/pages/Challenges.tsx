@@ -3,9 +3,6 @@ import getChallenges from "../api/getChallenges.tsx";
 import { Table, TableHead } from "flowbite-react";
 
 
-const challenges = await getChallenges();
-
-
 
 export function Challenges() {
   return (

@@ -21,7 +21,7 @@ export function Header() {
             Home
             </Navbar.Link>
             <Navbar.Link href="/playground">Playground</Navbar.Link>
-            <Navbar.Link href="#">Challenges</Navbar.Link>
+            <Navbar.Link href="/challenges">Challenges</Navbar.Link>
         </Navbar.Collapse>
         </Navbar>
     );
