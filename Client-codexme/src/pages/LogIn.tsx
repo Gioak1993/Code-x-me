@@ -1,12 +1,12 @@
-import { BackgroundImageLoginForm } from "../components/LogInForm";
+import { LoginForm } from "../components/LogInForm";
 import { Layout } from "../layout/Layout";
 
-export function LogIn () {
-    return (
-        <Layout className="">
-            
-            <BackgroundImageLoginForm/>
+const LogIn = () => {
+  return (
+    <Layout className="">
+      <LoginForm />
+    </Layout>
+  );
+};
 
-        </Layout>
-    )
-}
+export default LogIn;

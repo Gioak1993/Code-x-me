@@ -1,8 +1,8 @@
-// we need to get the data from the backend 
+// we need to get the data from the backend
 
 import axios from "axios";
 
-const submitCode = async (sourceCode:string, languageId:number) => {
+const submitCode = async (sourceCode: string, languageId: number) => {
   try {
     const response = await axios.post("http://localhost:3000/submission", {
       source_code: sourceCode,
@@ -17,4 +17,3 @@ const submitCode = async (sourceCode:string, languageId:number) => {
 };
 
 export default submitCode;
-

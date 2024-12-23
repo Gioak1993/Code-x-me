@@ -2,7 +2,7 @@ import { Button, Label, TextInput, Checkbox } from "flowbite-react";
 import  SubmitLogIn  from "../api/logInRequest"
 import { useState } from "react";
 
-export function BackgroundImageLoginForm() {
+export function LoginForm() {
 
     const [formData, setFormData] = useState ({
 

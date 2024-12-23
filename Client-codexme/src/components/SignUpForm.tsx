@@ -6,7 +6,7 @@ import { useState } from "react";
 import submitSignUpForm from "../api/signUpRequest.tsx"
 
 
-export function BackgroundImageRegisterForm() {
+export function RegisterForm() {
 
   const [formData, setFormData] = useState({
     Username: "",
@@ -22,7 +22,6 @@ export function BackgroundImageRegisterForm() {
       ...prevData,
       [name]: value,
     }));
-    console.log(e.target.name, e.target.value)
   };
 
   function handleSubmit (event: React.FormEvent<HTMLFormElement>)  {
@@ -34,8 +33,6 @@ export function BackgroundImageRegisterForm() {
     }
 
     submitSignUpForm(formData)
-
-    console.log(formData)
 
 }
 

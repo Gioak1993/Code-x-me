@@ -1,17 +1,12 @@
 import { Layout } from "../layout/Layout";
-import { BackgroundImageRegisterForm } from "../components/SignUpForm";
+import { RegisterForm } from "../components/SignUpForm";
 
+const SignUp = () => {
+  return (
+    <Layout className=" ">
+      <RegisterForm />
+    </Layout>
+  );
+};
 
-export function SignUp () {
-
-    return (
-        <Layout className=" ">
-
-        <BackgroundImageRegisterForm />
-
-        </Layout>
-
-    )
-
-
-}
+export default SignUp;
