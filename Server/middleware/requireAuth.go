@@ -17,15 +17,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func RequireAuth(c *gin.Context) {
+type User struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	UserName  string             `bson:"username"`
+	Email     string             `bson:"email"`
+	Password  string             `bson:"password"`
+	CreatedAt time.Time          `bson:"createdAt"`
+}
 
-	type User struct {
-		ID        primitive.ObjectID `bson:"_id,omitempty"`
-		UserName  string             `bson:"username"`
-		Email     string             `bson:"email"`
-		Password  string             `bson:"password"`
-		CreatedAt time.Time          `bson:"createdAt"`
-	}
+func RequireAuth(c *gin.Context) {
 
 	// get the cookie of req
 

@@ -1,4 +1,5 @@
-import axios from "axios";
+
+import apiClient from "./apiClient";
 
 type Username = {
   Email: string;
@@ -7,7 +8,7 @@ type Username = {
 
 const SubmitLogIn = async (logindata: Username) => {
   try {
-    const response = await axios.post("http://localhost:3000/login", {
+    const response = await apiClient.post("/login", {
       email: logindata.Email,
       password: logindata.Password,
     });

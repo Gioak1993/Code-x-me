@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"code-x-me/server/initializers"
+	"code-x-me/server/middleware"
 	"context"
 	"fmt"
 	"net/http"
@@ -112,19 +113,37 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("Authorization", tokenString, 3600, "/", "localhost", false, true)
+	c.SetSameSite(http.SameSiteDefaultMode)
+	c.SetCookie("Authorization", tokenString, 3600, "/", "localhost", false, false)
 
+	
 	c.JSON(http.StatusOK, gin.H{})
 
 }
 
 func Validate(c *gin.Context) {
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Im logged in",
-	})
+	user, exists := c.Get("user")
+    if !exists {
+        c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+        return
+    }
 
+	// Type assert the user object to its type
+    typedUser, ok := user.(middleware.User)
+    if !ok {
+        c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+        return
+    }
+
+    // Create a sanitized response
+    sanitizedUser := gin.H{
+        "id":       typedUser.ID.Hex(), // Convert ObjectID to string
+        "username": typedUser.UserName,
+        "email":    typedUser.Email,
+        "createdAt": typedUser.CreatedAt,
+    }
+	c.JSON(http.StatusOK, gin.H{"user": sanitizedUser})
 }
 
 func LogOut(c *gin.Context) {

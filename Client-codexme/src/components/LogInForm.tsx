@@ -74,7 +74,7 @@ export function LoginForm() {
                     Password
                   </Label>
                   <TextInput
-                    id="confirm-password"
+                    id="password"
                     name="Password"
                     placeholder="••••••••"
                     required

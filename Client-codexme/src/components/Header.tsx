@@ -1,6 +1,12 @@
+"use client" ;
+
 import { Button, Navbar, DarkThemeToggle } from "flowbite-react";
+import { useAuth } from "../api/authContext";
 
 export function Header() {
+
+  const {user, login, logout} = useAuth();
+
   return (
     <Navbar className="top-0 min-w-full" fluid rounded>
       <Navbar.Brand href="/">
@@ -11,9 +17,7 @@ export function Header() {
       </Navbar.Brand>
       <div className="flex p-1 md:order-2">
         <DarkThemeToggle></DarkThemeToggle>
-        <a href="/login">
-          <Button color="blue">Sign In</Button>
-        </a>
+          { user ? (<Button onClick={() => logout() } color="red">Sign Out</Button>) : (<Button onClick={() => login() } color="blue">Sign in</Button>)}
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse className="items-center">

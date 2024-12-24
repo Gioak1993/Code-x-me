@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./api/authContext";
 
 const Home = React.lazy(() => import("./pages/Home"));
 const Playground = React.lazy(() => import("./pages/Playground"));
@@ -11,6 +12,7 @@ const Challenge = React.lazy(() => import("./pages/ChallengePage"));
 export default function App() {
   return (
     <Router>
+      <AuthProvider>
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -21,6 +23,7 @@ export default function App() {
           <Route path="/challenge/:id" element={<Challenge />} />
         </Routes>
       </Suspense>
+      </AuthProvider>
     </Router>
   );
 }

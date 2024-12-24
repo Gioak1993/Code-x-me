@@ -16,6 +16,13 @@ const options = {
   scrollBeyondLastLine: false, // Disable scrolling beyond the last line
 };
 
+//define the types for the languages
+type Language = {
+  name: string;
+  id: number;
+  function: string;
+};
+
 export function CodeArea() {
   //define the props for the editor
   const [editor, setEditor] = useState({
@@ -33,13 +40,6 @@ export function CodeArea() {
     status: "",
     time: "",
   });
-
-  //define the types for the languages
-  type Language = {
-    name: string;
-    id: number;
-    function: string;
-  };
 
   //define an array for the programming languages
 
@@ -188,6 +188,7 @@ export function CodeArea() {
       setEditor({ ...editor, value: newValue });
     }
   }
+
   // when a language is selected on the dropdown, the editor language change so it can give better recommendations
   // we also change the language id which is needed for the api
 
@@ -216,7 +217,7 @@ export function CodeArea() {
   }
 
   return (
-    <Card className="m-2 grid ">
+    <Card className="m-2 grid">
       <Card className="m-2 flex">
         <Dropdown
           color="blue"

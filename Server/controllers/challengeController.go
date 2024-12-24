@@ -29,11 +29,11 @@ type CodeChallenge struct {
 }
 
 type UserSubmission struct {
+	userId	  string 	`json:"user_id"`
 	ChallengeID string `json:"challenge_id"`
 	LanguageId  int    `json:"language_id"`
 	SourceCode  string `json:"source_code"`
 }
-
 
 func CreateChallenge(c *gin.Context) {
 
@@ -115,33 +115,33 @@ func GetChallenge(c *gin.Context) {
 }
 
 var languageTemplates = map[int]string{
-	92: `print(solution(%s))`,                            // Python
-	93: `console.log(solution(%s));`,            // JavaScript
-	94: `console.log(solution(%s));`,      // TypeScript
-	83: `print(solution(%s))`,                       // Swift
-	45: `; Assembly solution\nsolution:\n    call solution with parameters: %s`, // Assembly
-	46: `function main() {\n    solution(%s)\n}`,                          // Bash
-	75: `int main() {\n    printf("%d", solution(%s));\n    return 0;\n}`, // C
-	76: `int main() {\n    std::cout << solution(%s);\n    return 0;\n}`,  // C++
-	51: `class Program {\n    static void Main() {\n        Console.WriteLine(Solution(%s));\n    }\n}`, // C#
+	92: `print(solution(%s))`,                                                                                                // Python
+	93: `console.log(solution(%s));`,                                                                                         // JavaScript
+	94: `console.log(solution(%s));`,                                                                                         // TypeScript
+	83: `print(solution(%s))`,                                                                                                // Swift
+	45: `; Assembly solution\nsolution:\n    call solution with parameters: %s`,                                              // Assembly
+	46: `function main() {\n    solution(%s)\n}`,                                                                             // Bash
+	75: `int main() {\n    printf("%d", solution(%s));\n    return 0;\n}`,                                                    // C
+	76: `int main() {\n    std::cout << solution(%s);\n    return 0;\n}`,                                                     // C++
+	51: `class Program {\n    static void Main() {\n        Console.WriteLine(Solution(%s));\n    }\n}`,                      // C#
 	77: `IDENTIFICATION DIVISION.\nPROGRAM-ID. MAIN.\nPROCEDURE DIVISION.\n    DISPLAY "Solution result: %s"\n    STOP RUN.`, // COBOL
-	56: `void main() {\n    writeln(solution(%s));\n}`,                    // D
-	90: `void main() {\n    print(solution(%s));\n}`,                      // Dart
-	57: `def main():\n    IO.puts Solution.solution(%s)`,                 // Elixir
-	58: `int main() {\n    io:format("~p", [solution(%s)]).}\n`,            // Erlang
-	87: `let main() =\n    printfn "%A" (solution %s)`,                    // F#
-	59: `PROGRAM main\n    WRITE(solution(%s));\nEND PROGRAM main`,        // Fortran
-	95: `func main() {\n    fmt.Println(solution(%s))\n}`,                 // Go
-	88: `def main():\n    println(solution(%s))`,                         // Groovy
-	61: `main :: IO ()\nmain = putStrLn $ show $ solution %s`,            // Haskell
-	78: `fun main() {\n    println(solution(%s))\n}`,                     // Kotlin
-	64: `function main()\n    print(solution(%s))\nend`,                  // Lua
-	79: `int main() {\n    printf("%d", solution(%s));\n    return 0;\n}`, // Objective-C
-	66: `function main()\n    printf("Solution: %s", solution(%s));\nend`, // Octave
-	85: `sub main {\n    print solution(%s);\n}`,                           // Perl
-	80: `main <- function() {\n    cat(solution(%s))\n}`,                  // R
-	72: `def main():\n    puts solution(%s)`,                             // Ruby
-	81: `object Main {\n    def main() {\n        println(solution(%s))\n    }\n}`, // Scala
+	56: `void main() {\n    writeln(solution(%s));\n}`,                                                                       // D
+	90: `void main() {\n    print(solution(%s));\n}`,                                                                         // Dart
+	57: `def main():\n    IO.puts Solution.solution(%s)`,                                                                     // Elixir
+	58: `int main() {\n    io:format("~p", [solution(%s)]).}\n`,                                                              // Erlang
+	87: `let main() =\n    printfn "%A" (solution %s)`,                                                                       // F#
+	59: `PROGRAM main\n    WRITE(solution(%s));\nEND PROGRAM main`,                                                           // Fortran
+	95: `func main() {\n    fmt.Println(solution(%s))\n}`,                                                                    // Go
+	88: `def main():\n    println(solution(%s))`,                                                                             // Groovy
+	61: `main :: IO ()\nmain = putStrLn $ show $ solution %s`,                                                                // Haskell
+	78: `fun main() {\n    println(solution(%s))\n}`,                                                                         // Kotlin
+	64: `function main()\n    print(solution(%s))\nend`,                                                                      // Lua
+	79: `int main() {\n    printf("%d", solution(%s));\n    return 0;\n}`,                                                    // Objective-C
+	66: `function main()\n    printf("Solution: %s", solution(%s));\nend`,                                                    // Octave
+	85: `sub main {\n    print solution(%s);\n}`,                                                                             // Perl
+	80: `main <- function() {\n    cat(solution(%s))\n}`,                                                                     // R
+	72: `def main():\n    puts solution(%s)`,                                                                                 // Ruby
+	81: `object Main {\n    def main() {\n        println(solution(%s))\n    }\n}`,                                           // Scala
 }
 
 // Function to dynamically construct the execution logic
@@ -161,7 +161,6 @@ func buildExecutionCode(languageID int, sourceCode string, inputs []interface{})
 	// Default fallback if no template is found
 	return fmt.Sprintf("%s\n// Execute solution with inputs: %s", sourceCode, inputStr)
 }
-
 
 // SubmitChallenge logic with dynamic language support
 func SubmitChallenge(c *gin.Context) {
