@@ -75,7 +75,12 @@ func SubmissionBatch(c *gin.Context) {
 
 	// send the request to de Judge0 Api
 
-	results := api.BatchJudgeZero(submissions)
+	results, err := api.BatchJudgeZero(submissions)
+
+	if err != nil {	
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	// get the results
 	c.JSON(http.StatusOK, results)

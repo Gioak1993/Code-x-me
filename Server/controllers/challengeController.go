@@ -203,9 +203,32 @@ func SubmitChallenge(c *gin.Context) {
 			LanguageID:     submission.LanguageId,
 			ExpectedOutput: expectedOutputStr,
 		})
+
 	}
 
-	result := api.BatchJudgeZero(testingsSubmission)
+	results, err := api.BatchJudgeZero(testingsSubmission)
 
-	c.JSON(http.StatusOK, result)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error when submitting the challenge"})
+		return
+	}
+
+	challengeBool := true
+
+	for _, result := range results {
+		expected := strings.TrimSpace(result["expected_output"].(string))
+		stdout := strings.TrimSpace(result["stdout"].(string))
+
+		if expected != stdout {
+			fmt.Printf("Expected: %q, Got: %q\n", expected, stdout)
+			challengeBool = false
+			break
+		}
+	}
+
+	if challengeBool {
+		c.JSON(http.StatusOK, gin.H{"message": "Challenge completed successfully"})
+	} else {
+		c.JSON(http.StatusOK, gin.H{"message": "Challenge failed"})
+	}
 }

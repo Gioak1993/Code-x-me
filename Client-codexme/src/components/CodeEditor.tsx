@@ -1,30 +1,17 @@
 "use client";
 
 import { Editor } from "@monaco-editor/react";
-import { Dropdown, Button } from "flowbite-react";
+import { Dropdown, Button, theme } from "flowbite-react";
 import { useState } from "react";
 import { Card } from "./Card.tsx";
+import submitChallenge from "../api/sumbitChallenge.tsx";
+import { useAuth } from "../api/authContext";
+import { useParams } from "react-router";
+import { useEffect } from "react"
+import getChallenge from "../api/getChallengeId.tsx"
+import { useThemeMode } from "flowbite-react";
 
 
-// const options = {
-//     readOnly: true, // Make the editor editable
-//     lineNumbers: "off" as const, // Show line numbers
-//     minimap: {
-//       enabled: false, // Enable the minimap
-//     },
-//     fontSize: 14, // Customize font size
-//     scrollBeyondLastLine: false, // Disable scrolling beyond the last line
-//   };
-
-//define a type for a function that will be executed on submit
-type SubmitFunction = (...args: any[]) => Promise<any>;
-
-//define the props for the button component
-
-interface EditorProps {
-    submitFunction: SubmitFunction; // Function to execute on click
-    args: any[]; // Arguments for the function
-  }
 
 
 //define the types for the languages
@@ -32,6 +19,14 @@ type Language = {
     name: string;
     id: number;
     function: string;
+};
+
+type Challenge = {
+  id: string;
+  problem_explanation: string;
+  problem_name: string;
+  difficulty: string;
+  constraints: string;
 };
 
 const languagesList: Language[] = [
@@ -52,7 +47,13 @@ const languagesList: Language[] = [
     },
   ];
 
-export function CodeEditor(EditorProps: EditorProps) {
+export function CodeEditor() {
+
+  const { id } = useParams<{ id: string }>(); // Extract the challenge ID from the URL
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
     //define the props for the editor
     const [editor, setEditor] = useState({
       defaultValue: "##create your code here",
@@ -60,7 +61,15 @@ export function CodeEditor(EditorProps: EditorProps) {
       defaultLanguage: "python",
       value: "",
       language: "",
+      theme: "",
     });
+
+    const { computedMode } = useThemeMode();
+
+    useEffect(() => {
+      const updatedTheme = computedMode === "dark" ? "vs-dark" : "light";
+      setEditor((prevEditor) => ({ ...prevEditor, theme: updatedTheme }));
+    }, [computedMode]); // Re-run when `computedMode` changes
 
     //set the state for changes on the code in the editor
 
@@ -86,6 +95,50 @@ export function CodeEditor(EditorProps: EditorProps) {
     }
   }
 
+  useEffect(() => {
+    const fetchChallenge = async () => {
+      if (!id) {
+        setError("No challenge ID provided in the URL.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getChallenge(id);
+        setChallenge(data);
+      } catch (err) {
+        setError("Failed to fetch challenge. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChallenge();
+
+  }, [id]);
+
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!challenge) {
+    return <div>No challenge found.</div>;
+  }
+  if (!user) {
+    return (
+      <Card className="m-2 grid grid-cols-1">
+        <span className="bg-white text-3xl font-light tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white">
+          Please login to submit a challenge
+        </span>
+      </Card>
+    );
+  }
+
   return(
     <Card className="m-2 grid">
         <Card className="m-2 flex">
@@ -103,7 +156,7 @@ export function CodeEditor(EditorProps: EditorProps) {
                 </Dropdown.Item>
             ))}
             </Dropdown>
-            <Button onClick={()=> EditorProps.submitFunction()} color="blue" className="mx-1">
+            <Button onClick={() => submitChallenge(user.id, challenge.id, editor.value, editor.languageId)} color="blue" className="mx-1">
             Run
             </Button>
         </Card>
@@ -117,9 +170,8 @@ export function CodeEditor(EditorProps: EditorProps) {
             height="90vh"
             language={editor.language}
             value={editor.value}
-            theme="vs-dark"
+            theme={editor.theme}
             onChange={handleCodeChange}
-            
           />
         </Card>
     </Card>

@@ -17,9 +17,15 @@ import (
 )
 
 var client *http.Client
+var ApiKey string
 
 func init() {
-	client = &http.Client{}
+
+	client = &http.Client{Timeout: 30 * time.Second}
+	apiKey := os.Getenv("SuluToken")
+	if apiKey == "" {
+		fmt.Println("Api Key not set")
+	}
 }
 
 type Status struct {
@@ -88,14 +94,10 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 	}
 
 	// Add Headers
-	apiKey := os.Getenv("SuluToken")
-	if apiKey == "" {
-		fmt.Println("Api Key not set")
-	}
 
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("SuluToken"))
+	req.Header.Set("Authorization", "Bearer "+ os.Getenv("SuluToken"))
 
 	//do the request
 
@@ -177,8 +179,8 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 	// so you need to retry until you get the desired result,
 	// lets set a max number of tries and try again until we get something
 
-	const maxTries int = 100
-	delay := 10 * time.Millisecond
+	const maxTries int = 10
+	delay := 500 * time.Millisecond
 
 	//we use this label to break the loop on the desired condition
 	for i := 1; i < maxTries; i++ {
@@ -192,12 +194,8 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 		memory := gjson.Get(result, "memory")
 		expected_output := gjson.Get(result, "expected_output")
 
-		switch statusID.Int() {
-		case 1, 2:
-			fmt.Println("Result not ready")
-			time.Sleep(delay)
-			continue
-		case 3, 4:
+		if statusID.Int() > 3 {
+
 			fmt.Println(output.String())
 			results := map[string]string{
 				"Status":         "success",
@@ -209,11 +207,9 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 			}
 			fmt.Println(result)
 			return results // when the output is ready to be shown we return the response
-		default:
+		}else {
 			time.Sleep(delay)
-			continue
 		}
-
 	}
 	return ("Error trying to get the output")
 }

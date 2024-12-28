@@ -1,13 +1,13 @@
-import getChallenge from "../api/getChallengeId";
-import submitChallenge from "../api/sumbitChallenge";
+"use-client";
 
+import getChallenge from "../api/getChallengeId";
+import { useAuth } from "../api/authContext";
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { Layout } from "../layout/Layout";
 import { Card } from "../components/Card";
 import { CodeEditor } from "../components/CodeEditor";
-
-
+import { Badge } from "flowbite-react";
 
 type Challenge = {
   id: string;
@@ -17,13 +17,16 @@ type Challenge = {
   constraints: string;
 };
 
-
 const ChallengePage = () => {
   const { id } = useParams<{ id: string }>(); // Extract the challenge ID from the URL
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const { user } = useAuth();
+  const [result, setResult] = useState({
+    value: "Send yout code to see the result",
+    color: "gray",
+});
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -46,22 +49,25 @@ const ChallengePage = () => {
     fetchChallenge();
   }, [id]);
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (!user) {
+    return (
+      <Layout className="">
+        <h1 className="text-3xl text-gray-900 dark:text-white">
+          Please log in to view this challenge.
+        </h1>
+      </Layout>
+    );
   }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
   if (!challenge) {
-    return <div>No challenge found.</div>;
+    <Layout className="">
+      return <div>No challenge found.</div>;
+    </Layout>;
   }
 
   return (
     <Layout className="">
       <h1 className="m-5 bg-white text-center text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white sm:text-5xl">
-        {challenge.problem_name}
+        {challenge?.problem_name}
       </h1>
       <Card className="mx-auto grid max-w-7xl grid-cols-2">
         <Card className="">
@@ -69,24 +75,23 @@ const ChallengePage = () => {
             Problem Explanation
           </h3>
           <p className="text-gray-900 dark:text-white">
-            {challenge.problem_explanation}
+            {challenge?.problem_explanation}
           </p>
           <h3 className="text-3xl text-gray-900 dark:text-white">
             Constraints
           </h3>
           <p className="text-gray-900 dark:text-white">
-            {challenge.constraints}
+            {challenge?.constraints}
           </p>
           <h3 className="text-3xl text-gray-900 dark:text-white">Difficulty</h3>
           <p className="text-gray-900 dark:text-white">
-            {challenge.difficulty}
+            {challenge?.difficulty}
           </p>
         </Card>
-        {/* <Card className="grid ">
-        <CodeEditor function = {submitChallenge(challenge.id, )}  
-            
-          
-        </Card> */}
+        <Card className="grid ">
+          <CodeEditor />
+          <Badge className= "w-fit" color={result.color}>{result.value}</Badge>
+        </Card>
       </Card>
     </Layout>
   );

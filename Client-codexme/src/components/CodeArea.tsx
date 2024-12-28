@@ -1,10 +1,11 @@
 "use client";
 
 import Editor from "@monaco-editor/react";
-import { Dropdown, Button } from "flowbite-react";
-import { useState } from "react";
+import { Dropdown, Button, theme } from "flowbite-react";
+import { useEffect, useState } from "react";
 import { Card } from "./Card.tsx";
 import submitCode from "../api/submitCode.tsx";
+import { useThemeMode } from "flowbite-react";
 
 const options = {
   readOnly: true, // Make the editor editable
@@ -31,6 +32,7 @@ export function CodeArea() {
     defaultLanguage: "python",
     value: "",
     language: "",
+    theme: "",
   });
 
   const [output, setOutput] = useState({
@@ -181,6 +183,14 @@ export function CodeArea() {
     },
   ];
 
+  const { computedMode } = useThemeMode(); // Detect current theme mode
+
+
+  useEffect(() => {
+    const updatedTheme = computedMode === "dark" ? "vs-dark" : "light";
+    setEditor((prevEditor) => ({ ...prevEditor, theme: updatedTheme }));
+  }, [computedMode]); // Re-run when `computedMode` changes
+
   //set the state for changes on the code in the editor
 
   function handleCodeChange(newValue: string | undefined) {
@@ -243,11 +253,11 @@ export function CodeArea() {
             Input
           </span>
           <Editor
-            className="min-h-full"
+            className="min-h-full border-2 border-zinc-850"
             height="90vh"
             language={editor.language}
             value={editor.value}
-            theme="vs-dark"
+            theme={editor.theme}
             onChange={handleCodeChange}
           />
         </Card>
@@ -258,7 +268,7 @@ export function CodeArea() {
           <Editor
             className="min-h-full "
             height="90vh"
-            theme="vs-dark"
+            theme={editor.theme}
             options={options}
             value={output.value}
           />

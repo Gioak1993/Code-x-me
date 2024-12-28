@@ -50,11 +50,6 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 	}
 
 	// Add Headers
-	apiKey := os.Getenv("SuluToken")
-	if apiKey == "" {
-		fmt.Println("Api Key not set")
-	}
-
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+os.Getenv("SuluToken"))
@@ -142,7 +137,7 @@ func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
 	return string(body), nil
 }
 
-func BatchJudgeZero(batch []RequestsJudgeZeroApi) interface{} {
+func BatchJudgeZero(batch []RequestsJudgeZeroApi) ([]map[string]interface{}, error) {
 
 	batchJudgeApi := BatchSubmission{
 		Submissions: batch,
@@ -150,8 +145,7 @@ func BatchJudgeZero(batch []RequestsJudgeZeroApi) interface{} {
 
 	tokens, err := batchJudgeApi.GetBatchToken(batch)
 	if err != nil {
-		fmt.Println("Error:", err)
-		return fmt.Errorf("error %s", err)
+		return  nil, fmt.Errorf("failed to get token: %s", err)
 	}
 
 	// usually, when you run the get request the api still has not the result ready {"stdout":"null"}
@@ -159,7 +153,7 @@ func BatchJudgeZero(batch []RequestsJudgeZeroApi) interface{} {
 	// lets set a max number of tries and try again until we get something
 
 	const maxTries int = 20
-	delay := 1 * time.Millisecond
+	delay := 500 * time.Millisecond
 
 	var batchresults string
 
@@ -167,7 +161,7 @@ out:
 	for i := 1; i < maxTries; i++ {
 		batchresults, err = batchJudgeApi.GetBatchResults(tokens)
 		if err != nil {
-			return ("error in batchJudgeApi.GetBatchResults(tokens) ")
+			return nil, fmt.Errorf("error in batchJudgeApi.GetBatchResults(tokens)")
 		}
 
 		//here is when i want the if statement to check if the statusids is returning only 3 or 4
@@ -221,7 +215,7 @@ out:
 		return true
 	})
 
-	return submissionsData
+	return submissionsData, nil
 }
 
 // Helper function to convert gjson.Result to native Go types
