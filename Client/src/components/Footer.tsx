@@ -16,28 +16,28 @@ export function Footer() {
           </Link>
           <ul className="mb-6 flex flex-wrap items-center text-sm font-medium text-gray-500 dark:text-gray-400 sm:mb-0">
             <li>
-              <a href="/" className="me-4 hover:underline md:me-6">
+              <Link to="/" className="me-4 hover:underline md:me-6">
                 Home
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/playground" className="me-4 hover:underline md:me-6">
+              <Link to="/playground" className="me-4 hover:underline md:me-6">
                 Playground
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="/challenges" className="me-4 hover:underline md:me-6">
+              <Link to="/challenges" className="me-4 hover:underline md:me-6">
                 Challenges
-              </a>
+              </Link>
             </li>
           </ul>
         </div>
         <hr className="my-6 border-gray-200 dark:border-gray-700 sm:mx-auto lg:my-8" />
         <span className="block text-sm text-gray-500 dark:text-gray-400 sm:text-center">
           © 2023{" "}
-          <a href="/" className="hover:underline">
+          <Link to="/" className="hover:underline">
             CodexME
-          </a>
+          </Link>
           . All Rights Reserved.
         </span>
       </div>

@@ -4,7 +4,7 @@
 import { Button, Checkbox, Label, TextInput } from "flowbite-react";
 import { useState } from "react";
 import submitSignUpForm from "../api/signUpRequest.tsx"
-
+import { useNavigate, Link } from "react-router-dom";
 
 export function RegisterForm() {
 
@@ -24,6 +24,8 @@ export function RegisterForm() {
     }));
   };
 
+  const navigate = useNavigate()
+
   function handleSubmit (event: React.FormEvent<HTMLFormElement>)  {
     event.preventDefault()
 
@@ -33,6 +35,8 @@ export function RegisterForm() {
     }
 
     submitSignUpForm(formData)
+    // Redirect to the home page
+    navigate('/')
 
 }
 
@@ -134,12 +138,12 @@ export function RegisterForm() {
                 Create an account
               </Button>
               <p className="text-center text-sm font-medium text-gray-900 dark:text-white">
-                <a
-                  href="/login"
+                <Link
+                  to="/login"
                   className="font-medium text-primary-600 hover:underline dark:text-primary-500"
                 >
                   Already have an account?
-                </a>
+                </Link>
               </p>
             </form>
           </div>

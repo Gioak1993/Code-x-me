@@ -10,8 +10,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
+
+	// "strconv"
 	"time"
+
+	"code-x-me/server/initializers"
 
 	"github.com/tidwall/gjson"
 )
@@ -22,6 +25,7 @@ var ApiKey string
 func init() {
 
 	client = &http.Client{Timeout: 30 * time.Second}
+	initializers.LoadEnvVariables()
 	apiKey := os.Getenv("SuluToken")
 	if apiKey == "" {
 		fmt.Println("Api Key not set")
@@ -74,17 +78,20 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	// Prepare the JSON payload
 
-	payload := map[string]string{
-		"language_id":     strconv.Itoa(r.LanguageID),
+	payload := map[string]interface{}{
+		"language_id":     r.LanguageID,
 		"source_code":     r.SourceCode,
 		"expected_output": "null",
+		"redirect_stderr_to_stdout": true,
 	}
+
 
 	jsonDATA, err := json.Marshal(payload)
 	if err != nil {
 		fmt.Println("Error marshaling the json", err)
-
 	}
+
+	fmt.Print(bytes.NewBuffer(jsonDATA))
 
 	// Create the post Request
 
@@ -97,7 +104,7 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+ os.Getenv("SuluToken"))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("SuluToken"))
 
 	//do the request
 
@@ -180,7 +187,7 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 	// lets set a max number of tries and try again until we get something
 
 	const maxTries int = 10
-	delay := 500 * time.Millisecond
+	delay := 50 * time.Millisecond
 
 	//we use this label to break the loop on the desired condition
 	for i := 1; i < maxTries; i++ {
@@ -188,26 +195,26 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 		if err != nil {
 			fmt.Println("Get this error when retrieving results:", err)
 		}
+
 		statusID := gjson.Get(result, "status.id")
-		output := gjson.Get(result, "stdout")
-		executionTime := gjson.Get(result, "time")
-		memory := gjson.Get(result, "memory")
-		expected_output := gjson.Get(result, "expected_output")
 
 		if statusID.Int() > 3 {
 
-			fmt.Println(output.String())
+			output := gjson.Get(result, "stdout")
+			executionTime := gjson.Get(result, "time")
+			memory := gjson.Get(result, "memory")
+			expected_output := gjson.Get(result, "expected_output")
+
 			results := map[string]string{
-				"Status":         "success",
-				"Output":         output.String(),
-				"Time":           executionTime.String(),
-				"Memory":         memory.String(),
-				"Message":        "code executed successfully",
-				"ExpectedOutput": expected_output.String(),
+				"status":         "success",
+				"output":         output.String(),
+				"time":           executionTime.String(),
+				"memory":         memory.String(),
+				"message":        "code executed successfully",
+				"expected_output": expected_output.String(),
 			}
-			fmt.Println(result)
 			return results // when the output is ready to be shown we return the response
-		}else {
+		} else {
 			time.Sleep(delay)
 		}
 	}

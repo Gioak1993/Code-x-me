@@ -116,7 +116,6 @@ func Login(c *gin.Context) {
 	c.SetSameSite(http.SameSiteDefaultMode)
 	c.SetCookie("Authorization", tokenString, 3600, "/", "localhost", false, false)
 
-	
 	c.JSON(http.StatusOK, gin.H{})
 
 }
@@ -124,25 +123,25 @@ func Login(c *gin.Context) {
 func Validate(c *gin.Context) {
 
 	user, exists := c.Get("user")
-    if !exists {
-        c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
-        return
-    }
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
+		return
+	}
 
 	// Type assert the user object to its type
-    typedUser, ok := user.(middleware.User)
-    if !ok {
-        c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
-        return
-    }
+	typedUser, ok := user.(middleware.User)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
+		return
+	}
 
-    // Create a sanitized response
-    sanitizedUser := gin.H{
-        "id":       typedUser.ID.Hex(), // Convert ObjectID to string
-        "username": typedUser.UserName,
-        "email":    typedUser.Email,
-        "createdAt": typedUser.CreatedAt,
-    }
+	// Create a sanitized response
+	sanitizedUser := gin.H{
+		"id":        typedUser.ID.Hex(), // Convert ObjectID to string
+		"username":  typedUser.UserName,
+		"email":     typedUser.Email,
+		"createdAt": typedUser.CreatedAt,
+	}
 	c.JSON(http.StatusOK, gin.H{"user": sanitizedUser})
 }
 

@@ -13,5 +13,4 @@ func LoadEnvVariables() {
 		fmt.Println("Error loading .env file:", err)
 		panic(err)
 	}
-
 }

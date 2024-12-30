@@ -1,7 +1,7 @@
 "use client";
 
 import Editor from "@monaco-editor/react";
-import { Dropdown, Button, theme } from "flowbite-react";
+import { Dropdown, Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { Card } from "./Card.tsx";
 import submitCode from "../api/submitCode.tsx";
@@ -21,7 +21,6 @@ const options = {
 type Language = {
   name: string;
   id: number;
-  function: string;
 };
 
 export function CodeArea() {
@@ -49,142 +48,114 @@ export function CodeArea() {
     {
       name: "Python",
       id: 92,
-      function: `def solution():\n    # Write your solution here\n    pass`,
     },
     {
       name: "Javascript",
       id: 93,
-      function: `function solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "TypeScript",
       id: 94,
-      function: `function solution(): void {\n    // Write your solution here\n}`,
     },
     {
       name: "Swift",
       id: 83,
-      function: `func solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "Assembly",
       id: 45,
-      function: `; Assembly solution\nsolution:\n    ; Write your solution here`,
     },
     {
       name: "Bash",
       id: 46,
-      function: `solution() {\n    # Write your solution here\n}`,
     },
     {
       name: "C",
       id: 75,
-      function: `void solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "C++",
       id: 76,
-      function: `void solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "C#",
       id: 51,
-      function: `void Solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "COBOL",
       id: 77,
-      function: `IDENTIFICATION DIVISION.\nPROGRAM-ID. SOLUTION.\nPROCEDURE DIVISION.\n    DISPLAY "Write your solution here".\n    STOP RUN.`,
     },
     {
       name: "D",
       id: 56,
-      function: `void solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "Dart",
       id: 90,
-      function: `void solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "Elixir",
       id: 57,
-      function: `defmodule Solution do\n  def solution do\n    # Write your solution here\n  end\nend`,
     },
     {
       name: "Erlang",
       id: 58,
-      function: `solution() ->\n    %% Write your solution here\n    ok.`,
     },
     {
       name: "F#",
       id: 87,
-      function: `let solution() =\n    // Write your solution here`,
     },
     {
       name: "Fortran",
       id: 59,
-      function: `PROGRAM Solution\n    PRINT *, "Write your solution here"\nEND PROGRAM Solution`,
     },
     {
       name: "Go",
       id: 95,
-      function: `package main\n\nimport "fmt"\n\nfunc Solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "Grovy",
       id: 88,
-      function: `def solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "Haskell",
       id: 61,
-      function: `solution :: IO ()\nsolution = do\n    -- Write your solution here`,
     },
     {
       name: "Kotlin",
       id: 78,
-      function: `fun solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "Lua",
       id: 64,
-      function: `function solution()\n    -- Write your solution here\nend`,
     },
     {
       name: "Objective-C",
       id: 79,
-      function: `void solution() {\n    // Write your solution here\n}`,
     },
     {
       name: "Octave",
       id: 66,
-      function: `function solution()\n    % Write your solution here\nend`,
     },
     {
       name: "Perl",
       id: 85,
-      function: `sub solution {\n    # Write your solution here\n}`,
     },
     {
       name: "R",
       id: 80,
-      function: `solution <- function() {\n    # Write your solution here\n}`,
     },
     {
       name: "Ruby",
       id: 72,
-      function: `def solution\n    # Write your solution here\nend`,
     },
     {
       name: "Scala",
       id: 81,
-      function: `def solution(): Unit = {\n    // Write your solution here\n}`,
     },
   ];
 
   const { computedMode } = useThemeMode(); // Detect current theme mode
-
 
   useEffect(() => {
     const updatedTheme = computedMode === "dark" ? "vs-dark" : "light";
@@ -219,7 +190,7 @@ export function CodeArea() {
     try {
       const result = await submitCode(editor.value, editor.languageId);
       console.log(result);
-      setOutput({ ...output, value: result.Output }); // display this in your UI
+      setOutput({ ...output, value: result.output }); // display this in your UI
     } catch (error) {
       console.log(error);
       setOutput({ ...output, value: "Error submitting code." });
@@ -227,12 +198,12 @@ export function CodeArea() {
   }
 
   return (
-    <Card className="m-2 grid">
+    <Card className="m-2 mx-auto max-w-6xl grid">
       <Card className="m-2 flex">
         <Dropdown
           color="blue"
           className="mx-1"
-          label={`Language: ${editor.language.toUpperCase() || "Select"}`}
+          label={`Language: ${editor.language || "Select"}`}
         >
           {languagesList.map((language) => (
             <Dropdown.Item
@@ -247,14 +218,14 @@ export function CodeArea() {
           Run
         </Button>
       </Card>
-      <Card className="mx-2 grid grid-cols-1 md:grid-cols-2">
+      <Card className="mx-2 grid grid-cols-1 ">
         <Card className="m-2 grid grid-cols-1">
           <span className="bg-white text-3xl font-light tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white">
             Input
           </span>
           <Editor
-            className="min-h-full border-2 border-zinc-850"
-            height="90vh"
+            className="border-zinc-850 dark:border-none min-h-full border-2"
+            height="50vh"
             language={editor.language}
             value={editor.value}
             theme={editor.theme}
@@ -266,8 +237,8 @@ export function CodeArea() {
             Output
           </span>
           <Editor
-            className="min-h-full "
-            height="90vh"
+            className="border-2 border-zinc-850 dark:border-none min-h-full "
+            height="20vh"
             theme={editor.theme}
             options={options}
             value={output.value}

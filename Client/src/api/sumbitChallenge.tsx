@@ -1,5 +1,6 @@
 import axios from "axios";
 
+
 const submitChallenge = async (userId: string, challengeId :string, sourceCode: string, languageId: number) => {
     try {
       const response = await axios.post("http://localhost:3000/submitchallenge", {
@@ -7,6 +8,7 @@ const submitChallenge = async (userId: string, challengeId :string, sourceCode: 
         challenge_id: challengeId,
         source_code: sourceCode,
         language_id: languageId,
+        submission_time: new Date().toISOString(),
       });
       return response.data;
     } catch (error) {

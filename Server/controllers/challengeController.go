@@ -29,7 +29,7 @@ type CodeChallenge struct {
 }
 
 type UserSubmission struct {
-	userId	  string 	`json:"user_id"`
+	userId      string `json:"user_id"`
 	ChallengeID string `json:"challenge_id"`
 	LanguageId  int    `json:"language_id"`
 	SourceCode  string `json:"source_code"`
@@ -202,6 +202,7 @@ func SubmitChallenge(c *gin.Context) {
 			SourceCode:     sourceCode,
 			LanguageID:     submission.LanguageId,
 			ExpectedOutput: expectedOutputStr,
+			RedirectStderrToStdout: true,
 		})
 
 	}

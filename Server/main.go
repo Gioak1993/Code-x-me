@@ -13,7 +13,6 @@ import (
 
 func init() {
 
-	initializers.LoadEnvVariables()
 	initializers.DbConnect()
 
 }

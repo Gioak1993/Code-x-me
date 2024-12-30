@@ -23,10 +23,7 @@ const ChallengePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-  const [result, setResult] = useState({
-    value: "Send yout code to see the result",
-    color: "gray",
-});
+
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -69,7 +66,7 @@ const ChallengePage = () => {
       <h1 className="m-5 bg-white text-center text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white sm:text-5xl">
         {challenge?.problem_name}
       </h1>
-      <Card className="mx-auto grid max-w-7xl grid-cols-2">
+      <Card className="mx-auto grid max-w-7xl grid-cols-1 md:grid-cols-2">
         <Card className="">
           <h3 className="text-3xl text-gray-900 dark:text-white">
             Problem Explanation
@@ -90,7 +87,6 @@ const ChallengePage = () => {
         </Card>
         <Card className="grid ">
           <CodeEditor />
-          <Badge className= "w-fit" color={result.color}>{result.value}</Badge>
         </Card>
       </Card>
     </Layout>

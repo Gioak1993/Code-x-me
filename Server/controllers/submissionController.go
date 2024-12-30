@@ -42,7 +42,7 @@ func SubmissionBatch(c *gin.Context) {
 	}
 
 	//log the received data
-	fmt.Printf("Received: %+v\n", batch)
+	// fmt.Printf("Received: %+v\n", batch)
 
 	// Prepare the submissions for the Judge0 API
 	var submissions []api.RequestsJudgeZeroApi
@@ -71,13 +71,11 @@ func SubmissionBatch(c *gin.Context) {
 		})
 	}
 
-	fmt.Printf("Received: %+v\n", submissions)
-
 	// send the request to de Judge0 Api
 
 	results, err := api.BatchJudgeZero(submissions)
 
-	if err != nil {	
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

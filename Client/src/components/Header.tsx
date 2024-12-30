@@ -2,6 +2,7 @@
 
 import { Button, Navbar, DarkThemeToggle } from "flowbite-react";
 import { useAuth } from "../api/authContext";
+import { Link } from 'react-router-dom';
 
 export function Header() {
 
@@ -9,21 +10,21 @@ export function Header() {
 
   return (
     <Navbar className="top-0 min-w-full" fluid rounded>
-      <Navbar.Brand href="/">
+      <Link className="flex" to="/">
         <img src="/owl.svg" className="mr-3 h-6 sm:h-9" alt="CodexME Logo" />
         <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
           CodexME
         </span>
-      </Navbar.Brand>
+      </Link>
       <div className="flex p-1 md:order-2">
         <DarkThemeToggle></DarkThemeToggle>
           { user ? (<Button onClick={() => logout() } color="red">Sign Out</Button>) : (<Button onClick={() => login() } color="blue">Sign in</Button>)}
         <Navbar.Toggle />
       </div>
       <Navbar.Collapse className="items-center">
-        <Navbar.Link href="/">Home</Navbar.Link>
-        <Navbar.Link href="/playground">Playground</Navbar.Link>
-        <Navbar.Link href="/challenges">Challenges</Navbar.Link>
+        <Link className="dark:text-gray-400" to="/">Home</Link>
+        <Link className= "dark:text-gray-400" to="/playground">Playground</Link>
+        <Link className= "dark:text-gray-400" to="/challenges">Challenges</Link>
       </Navbar.Collapse>
     </Navbar>
   );

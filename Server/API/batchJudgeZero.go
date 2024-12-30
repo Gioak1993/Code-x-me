@@ -145,7 +145,7 @@ func BatchJudgeZero(batch []RequestsJudgeZeroApi) ([]map[string]interface{}, err
 
 	tokens, err := batchJudgeApi.GetBatchToken(batch)
 	if err != nil {
-		return  nil, fmt.Errorf("failed to get token: %s", err)
+		return nil, fmt.Errorf("failed to get token: %s", err)
 	}
 
 	// usually, when you run the get request the api still has not the result ready {"stdout":"null"}

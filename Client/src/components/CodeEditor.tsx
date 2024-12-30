@@ -1,15 +1,15 @@
 "use client";
 
 import { Editor } from "@monaco-editor/react";
-import { Dropdown, Button, theme } from "flowbite-react";
-import { useState } from "react";
+import { Dropdown, Button, useThemeMode, Badge } from "flowbite-react";
+import { useState, useEffect } from "react";
 import { Card } from "./Card.tsx";
 import submitChallenge from "../api/sumbitChallenge.tsx";
 import { useAuth } from "../api/authContext";
 import { useParams } from "react-router";
-import { useEffect } from "react"
 import getChallenge from "../api/getChallengeId.tsx"
-import { useThemeMode } from "flowbite-react";
+
+
 
 
 
@@ -54,6 +54,11 @@ export function CodeEditor() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const [result, setResult] = useState({
+    value: "Send yout code to see the result",
+    color: "gray",
+});
+
     //define the props for the editor
     const [editor, setEditor] = useState({
       defaultValue: "##create your code here",
@@ -117,6 +122,20 @@ export function CodeEditor() {
 
   }, [id]);
 
+  async function handleSubmit () {
+    if (user && challenge) {
+    const result = await submitChallenge(user.id, challenge.id, editor.value, editor.languageId)
+      if (result["message"] === "Challenge completed successfully") {
+        setResult({value: "Challenge completed successfully", color: "green"})
+      }
+      else {
+        setResult({value: "Challenge failed", color: "red"})
+      }
+    }
+    else {  
+      setResult({value: "Please login to submit a challenge", color: "gray"})
+    }
+  }
 
   if (loading) {
     return <div>Loading...</div>;
@@ -156,7 +175,7 @@ export function CodeEditor() {
                 </Dropdown.Item>
             ))}
             </Dropdown>
-            <Button onClick={() => submitChallenge(user.id, challenge.id, editor.value, editor.languageId)} color="blue" className="mx-1">
+            <Button onClick={() => handleSubmit()} color="blue" className="mx-1">
             Run
             </Button>
         </Card>
@@ -167,13 +186,14 @@ export function CodeEditor() {
           </span>
           <Editor
             className="min-h-full w-max"
-            height="90vh"
+            height="50vh"
             language={editor.language}
             value={editor.value}
             theme={editor.theme}
             onChange={handleCodeChange}
           />
         </Card>
+        <Badge className= "w-fit" color={result.color}>{result.value}</Badge>
     </Card>
     </Card>
   );

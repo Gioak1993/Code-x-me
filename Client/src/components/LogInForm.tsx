@@ -1,6 +1,7 @@
 import { Button, Label, TextInput, Checkbox } from "flowbite-react";
 import  SubmitLogIn  from "../api/logInRequest"
 import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 export function LoginForm() {
 
@@ -21,14 +22,15 @@ export function LoginForm() {
       console.log(formData)
 
     };
+    
+    const navigate = useNavigate()
 
-    function handleSubmit (event: React.FormEvent<HTMLFormElement>)  {
+    async function handleSubmit (event: React.FormEvent<HTMLFormElement>)  {
 
       event.preventDefault()
-  
-      SubmitLogIn(formData)
-  
-      console.log(formData)
+      await SubmitLogIn(formData)
+      navigate('/')
+
     };
 
     
@@ -108,13 +110,14 @@ export function LoginForm() {
                 </Button>
               
                     <p className="text-center text-sm text-gray-500 dark:text-gray-300">
+                    <Link to="/signup">
                     <Button
                         color="none"
-                        href="/signup"
                         className="w-full p-0 text-primary-600 hover:underline dark:text-primary-500 [&>span]:p-0"
                     >
                         Don't have an account?
                     </Button>
+                    </Link>
                     </p>
             
               </form>
