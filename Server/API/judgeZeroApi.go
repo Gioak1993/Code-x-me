@@ -79,12 +79,11 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 	// Prepare the JSON payload
 
 	payload := map[string]interface{}{
-		"language_id":     r.LanguageID,
-		"source_code":     r.SourceCode,
-		"expected_output": "null",
+		"language_id":               r.LanguageID,
+		"source_code":               r.SourceCode,
+		"expected_output":           "null",
 		"redirect_stderr_to_stdout": true,
 	}
-
 
 	jsonDATA, err := json.Marshal(payload)
 	if err != nil {
@@ -206,11 +205,11 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 			expected_output := gjson.Get(result, "expected_output")
 
 			results := map[string]string{
-				"status":         "success",
-				"output":         output.String(),
-				"time":           executionTime.String(),
-				"memory":         memory.String(),
-				"message":        "code executed successfully",
+				"status":          "success",
+				"output":          output.String(),
+				"time":            executionTime.String(),
+				"memory":          memory.String(),
+				"message":         "code executed successfully",
 				"expected_output": expected_output.String(),
 			}
 			return results // when the output is ready to be shown we return the response

@@ -9,10 +9,10 @@ type LayoutProps = {
 export function Layout({ children, className }: LayoutProps) {
   return (
     <div
-      className={`min-h-screen min-w-full bg-white antialiased dark:bg-gray-900 ${className}`}
+      className={`flex min-h-screen min-w-full flex-col bg-white antialiased dark:bg-gray-900 ${className}`}
     >
       <Header></Header>
-      {children}
+      <div className="flex-grow">{children}</div>
       <Footer></Footer>
     </div>
   );

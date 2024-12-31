@@ -11,7 +11,7 @@ type Challenge = {
 
 const getChallenge = async (id: string ) => {
   try {
-    const response = await axios.get(`http://localhost:3000/challenge/${id}`);
+    const response = await axios.get(`http://localhost:8080/challenge/${id}`);
     const challenge: Challenge = {
       id: response.data.id,
       problem_name: response.data.problem_name,

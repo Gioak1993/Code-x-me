@@ -125,14 +125,12 @@ func Validate(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Unauthorized"})
-		return
 	}
 
 	// Type assert the user object to its type
 	typedUser, ok := user.(middleware.User)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal Server Error"})
-		return
 	}
 
 	// Create a sanitized response
@@ -143,6 +141,7 @@ func Validate(c *gin.Context) {
 		"createdAt": typedUser.CreatedAt,
 	}
 	c.JSON(http.StatusOK, gin.H{"user": sanitizedUser})
+
 }
 
 func LogOut(c *gin.Context) {

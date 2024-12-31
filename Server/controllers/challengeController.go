@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -28,11 +29,20 @@ type CodeChallenge struct {
 	Difficulty         string             `bson:"difficulty" json:"difficulty"`
 }
 
-type UserSubmission struct {
-	userId      string `json:"user_id"`
+type CurrentSubmission struct {
+	UserID      string `json:"user_id"`
 	ChallengeID string `json:"challenge_id"`
 	LanguageId  int    `json:"language_id"`
 	SourceCode  string `json:"source_code"`
+}
+
+type RecordedSubmissions struct {
+	UserID         string    `json:"user_id"`
+	ChallengeID    string    `json:"challenge_id"`
+	LanguageId     int       `json:"language_id"`
+	SourceCode     string    `json:"source_code"`
+	Passed         bool      `json:"passed"`
+	SubmissionTime time.Time `json:"submission_time"`
 }
 
 func CreateChallenge(c *gin.Context) {
@@ -95,7 +105,8 @@ func GetChallenge(c *gin.Context) {
 
 	hexID, err := primitive.ObjectIDFromHex(challengeID) // Convert the string ID to an ObjectID
 	if err != nil {
-		panic(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+		return
 	}
 
 	filter := bson.D{{Key: "_id", Value: hexID}}
@@ -164,13 +175,14 @@ func buildExecutionCode(languageID int, sourceCode string, inputs []interface{})
 
 // SubmitChallenge logic with dynamic language support
 func SubmitChallenge(c *gin.Context) {
-	var submission UserSubmission
+	var submission CurrentSubmission
 
 	if err := c.BindJSON(&submission); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
 		return
 	}
 
+	//check the challenge in the database
 	coll := initializers.DBClient.Database("codexme").Collection("challenges")
 
 	hexchallengeID, err := primitive.ObjectIDFromHex(submission.ChallengeID)
@@ -185,10 +197,11 @@ func SubmitChallenge(c *gin.Context) {
 	err = coll.FindOne(context.TODO(), filter).Decode(&challenge)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The Challenge was not found"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "The Challenge was not found"})
 			return
 		}
-		panic(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "an error was found when searching the challenge"})
+		return
 	}
 
 	var testingsSubmission []api.RequestsJudgeZeroApi
@@ -199,10 +212,9 @@ func SubmitChallenge(c *gin.Context) {
 		expectedOutputStr := fmt.Sprintf("%v", testCase.ExpectedOutput)
 
 		testingsSubmission = append(testingsSubmission, api.RequestsJudgeZeroApi{
-			SourceCode:     sourceCode,
-			LanguageID:     submission.LanguageId,
-			ExpectedOutput: expectedOutputStr,
-			RedirectStderrToStdout: true,
+			SourceCode:             sourceCode,
+			LanguageID:             submission.LanguageId,
+			ExpectedOutput:         expectedOutputStr,
 		})
 
 	}
@@ -216,20 +228,56 @@ func SubmitChallenge(c *gin.Context) {
 
 	challengeBool := true
 
+out:
 	for _, result := range results {
+
+		//if there is a syntax error the null will make the server take to much time,
+		if result["stdout"] == nil {
+			c.JSON(http.StatusOK, gin.H{"error": "there is an error in the code"})
+			
+		}
 		expected := strings.TrimSpace(result["expected_output"].(string))
 		stdout := strings.TrimSpace(result["stdout"].(string))
-
 		if expected != stdout {
-			fmt.Printf("Expected: %q, Got: %q\n", expected, stdout)
 			challengeBool = false
-			break
+			break out
 		}
 	}
 
+	// logic if the challenge is correct or incorrect
+
+	coll = initializers.DBClient.Database("codexme").Collection("submissions")
+
 	if challengeBool {
+
+		RecordSubmission(coll, submission, challengeBool)
 		c.JSON(http.StatusOK, gin.H{"message": "Challenge completed successfully"})
+
 	} else {
+
+		RecordSubmission(coll, submission, challengeBool)
 		c.JSON(http.StatusOK, gin.H{"message": "Challenge failed"})
+
 	}
+}
+
+//use to record the users submissions
+func RecordSubmission(coll *mongo.Collection, submission CurrentSubmission, passed bool) {
+
+	doc := RecordedSubmissions{UserID: submission.UserID,
+		ChallengeID:    submission.ChallengeID,
+		LanguageId:     submission.LanguageId,
+		SourceCode:     submission.SourceCode,
+		Passed:         passed,
+		SubmissionTime: time.Now(),
+	}
+
+	result, err := coll.InsertOne(context.TODO(), doc)
+	if err != nil {
+		fmt.Println("error when inserting attempt", err)
+		return
+	}
+
+	fmt.Printf("Inserted attempt with _id: %v\n", result.InsertedID)
+
 }

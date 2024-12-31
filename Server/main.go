@@ -48,7 +48,7 @@ func main() {
 
 	r.POST("/submitchallenge", controllers.SubmitChallenge)
 
-	r.Run("localhost:3000") // listen and serve on 0.0.0.0:3000
+	r.Run("localhost:8080") // listen and serve on 0.0.0.0:8080
 
 	defer func() {
 		if err := initializers.DBClient.Disconnect(context.TODO()); err != nil {

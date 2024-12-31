@@ -198,7 +198,7 @@ export function CodeArea() {
   }
 
   return (
-    <Card className="m-2 mx-auto max-w-6xl grid">
+    <Card className="m-2 mx-auto grid w-full max-w-6xl">
       <Card className="m-2 flex">
         <Dropdown
           color="blue"
@@ -224,7 +224,7 @@ export function CodeArea() {
             Input
           </span>
           <Editor
-            className="border-zinc-850 dark:border-none min-h-full border-2"
+            className="border-zinc-850 min-h-full border-2 dark:border-none"
             height="50vh"
             language={editor.language}
             value={editor.value}
@@ -237,7 +237,7 @@ export function CodeArea() {
             Output
           </span>
           <Editor
-            className="border-2 border-zinc-850 dark:border-none min-h-full "
+            className="border-zinc-850 min-h-full border-2 dark:border-none "
             height="20vh"
             theme={editor.theme}
             options={options}

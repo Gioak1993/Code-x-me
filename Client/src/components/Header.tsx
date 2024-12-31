@@ -1,6 +1,6 @@
 "use client" ;
 
-import { Button, Navbar, DarkThemeToggle } from "flowbite-react";
+import { Button, Navbar, DarkThemeToggle, Badge } from "flowbite-react";
 import { useAuth } from "../api/authContext";
 import { Link } from 'react-router-dom';
 
@@ -24,7 +24,10 @@ export function Header() {
       <Navbar.Collapse className="items-center">
         <Link className="dark:text-gray-400" to="/">Home</Link>
         <Link className= "dark:text-gray-400" to="/playground">Playground</Link>
+        <div className="flex items-center space-x-1">
         <Link className= "dark:text-gray-400" to="/challenges">Challenges</Link>
+        <Badge className="text-xs px-2 py-1 rounded-full" color="info" size="sm" > Beta</Badge>
+        </div>
       </Navbar.Collapse>
     </Navbar>
   );

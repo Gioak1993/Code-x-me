@@ -4,7 +4,7 @@ import axios from "axios";
 
 const submitCode = async (sourceCode: string, languageId: number) => {
   try {
-    const response = await axios.post("http://localhost:3000/submission", {
+    const response = await axios.post("http://localhost:8080/submission", {
       source_code: sourceCode,
       language_id: languageId,
     });

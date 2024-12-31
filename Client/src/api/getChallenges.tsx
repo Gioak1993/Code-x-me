@@ -8,7 +8,7 @@ type Challenge = {
 
 const getChallenges = async (): Promise<Challenge[]> => {
   try {
-    const response = await axios.get("http://localhost:3000/challenges");
+    const response = await axios.get("http://localhost:8080/challenges");
     return response.data.map((challenge: Challenge) => ({
       id: challenge.id,
       problem_name: challenge.problem_name,

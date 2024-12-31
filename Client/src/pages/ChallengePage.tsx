@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { Layout } from "../layout/Layout";
 import { Card } from "../components/Card";
 import { CodeEditor } from "../components/CodeEditor";
-import { Badge } from "flowbite-react";
 
 type Challenge = {
   id: string;
@@ -23,7 +22,6 @@ const ChallengePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-
 
   useEffect(() => {
     const fetchChallenge = async () => {

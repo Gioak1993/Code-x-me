@@ -10,7 +10,7 @@ type Username = {
 
 const submitSignUpForm = async (formdata: Username) => {
   try {
-    const response = await axios.post("http://localhost:3000/signup", {
+    const response = await axios.post("http://localhost:8080/signup", {
       username: formdata.Username,
       email: formdata.Email,
       password: formdata.Password,

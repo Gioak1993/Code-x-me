@@ -7,14 +7,14 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 type Challenge = {
-    id: string;
-    problem_name: string;
-    difficulty: string;
-  };
+  id: string;
+  problem_name: string;
+  difficulty: string;
+};
 
 const Challenges = () => {
-    const [challenges, setChallenges] = useState<Challenge[]>([]);
-    const navigate = useNavigate();
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchChallenges = async () => {
@@ -28,7 +28,6 @@ const Challenges = () => {
 
     fetchChallenges();
   }, []); // Empty dependency array ensures the effect runs once after the component mounts
-
 
   const handleClick = (id: string) => {
     navigate(`/challenge/${id}`);
