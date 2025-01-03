@@ -1,0 +1,27 @@
+services:
+  # Backend: Go API
+  backend:
+    build:
+      context: ./server  # Assuming the Go code is under this directory
+      dockerfile: Dockerfile  # Path to your Go Dockerfile
+    ports:
+      - "4000:4000"  # Expose backend on port 8080
+    env_file:
+      - ./server/.env
+    networks:
+      - codex_network
+
+  # Nginx: Reverse Proxy
+  nginx:
+    build:
+      context: ./client
+    ports:
+      - "80:80"  # Expose Nginx on port 80
+    depends_on:
+      - backend
+    networks:
+      - codex_network
+
+networks:
+  codex_network:
+    driver: bridge

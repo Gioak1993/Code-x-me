@@ -1,10 +1,11 @@
 // we need to get the data from the backend
 
-import axios from "axios";
+// import axios from "axios";
+import apiClient from "./apiClient";
 
 const submitCode = async (sourceCode: string, languageId: number) => {
   try {
-    const response = await axios.post("http://localhost:8080/submission", {
+    const response = await apiClient.post("/submission", {
       source_code: sourceCode,
       language_id: languageId,
     });

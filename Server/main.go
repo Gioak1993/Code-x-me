@@ -22,10 +22,12 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"}, // Replace with your React app URL
+
+		AllowOrigins:     []string{"http://nginx:80"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
+		
 	}))
 
 	r.POST("/submission", controllers.Submission)
@@ -48,7 +50,7 @@ func main() {
 
 	r.POST("/submitchallenge", controllers.SubmitChallenge)
 
-	r.Run("localhost:8080") // listen and serve on 0.0.0.0:8080
+	r.Run(":4000") // listen and serve on 0.0.0.0:4000
 
 	defer func() {
 		if err := initializers.DBClient.Disconnect(context.TODO()); err != nil {

@@ -1,6 +1,6 @@
 //file to create a new user
+import apiClient from "./apiClient";
 
-import axios from "axios";
 
 type Username = {
   Username: string;
@@ -10,7 +10,7 @@ type Username = {
 
 const submitSignUpForm = async (formdata: Username) => {
   try {
-    const response = await axios.post("http://localhost:8080/signup", {
+    const response = await apiClient.post("/signup", {
       username: formdata.Username,
       email: formdata.Email,
       password: formdata.Password,

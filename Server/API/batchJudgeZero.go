@@ -52,7 +52,7 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 	// Add Headers
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("SuluToken"))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("SULUTOKEN"))
 
 	//do the request
 
@@ -117,7 +117,7 @@ func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
 	// Add the Headers
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+os.Getenv("SuluToken"))
+	req.Header.Add("Authorization", "Bearer "+os.Getenv("SULUTOKEN"))
 
 	resp, err := client.Do(req)
 

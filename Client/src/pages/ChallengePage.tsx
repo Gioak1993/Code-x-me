@@ -53,10 +53,29 @@ const ChallengePage = () => {
       </Layout>
     );
   }
+
+  if (loading) {
+    return (
+      <Layout className="">
+        <h1 className="text-3xl text-gray-900 dark:text-white">Loading...</h1>
+      </Layout>
+    );
+  }
+
+  if (error) {
+    return (
+      <Layout className="">
+        <h1 className="text-3xl text-gray-900 dark:text-white">{error}</h1>
+      </Layout>
+    );
+  }
+
   if (!challenge) {
-    <Layout className="">
-      return <div>No challenge found.</div>;
-    </Layout>;
+    return (
+      <Layout className="">
+        <h1 className="text-3xl text-gray-900 dark:text-white">No challenge found.</h1>
+      </Layout>
+    );
   }
 
   return (
@@ -92,3 +111,4 @@ const ChallengePage = () => {
 };
 
 export default ChallengePage;
+

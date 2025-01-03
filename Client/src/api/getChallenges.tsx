@@ -1,4 +1,5 @@
-import axios from "axios";
+import apiClient from "./apiClient";
+
 
 type Challenge = {
   id: string;
@@ -8,7 +9,7 @@ type Challenge = {
 
 const getChallenges = async (): Promise<Challenge[]> => {
   try {
-    const response = await axios.get("http://localhost:8080/challenges");
+    const response = await apiClient.get("/challenges");
     return response.data.map((challenge: Challenge) => ({
       id: challenge.id,
       problem_name: challenge.problem_name,

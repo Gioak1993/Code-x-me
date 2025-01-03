@@ -1,9 +1,10 @@
-import axios from "axios";
+
+import apiClient from "./apiClient";
 
 
 const submitChallenge = async (userId: string, challengeId :string, sourceCode: string, languageId: number) => {
     try {
-      const response = await axios.post("http://localhost:8080/submitchallenge", {
+      const response = await apiClient.post("/submitchallenge", {
         user_id: userId,
         challenge_id: challengeId,
         source_code: sourceCode,

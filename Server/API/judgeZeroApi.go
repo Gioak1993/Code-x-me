@@ -26,7 +26,7 @@ func init() {
 
 	client = &http.Client{Timeout: 30 * time.Second}
 	initializers.LoadEnvVariables()
-	apiKey := os.Getenv("SuluToken")
+	apiKey := os.Getenv("SULUTOKEN")
 	if apiKey == "" {
 		fmt.Println("Api Key not set")
 	}
@@ -103,7 +103,7 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("SuluToken"))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("SULUTOKEN"))
 
 	//do the request
 
@@ -148,7 +148,7 @@ func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
 	// Add the Headers
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+os.Getenv("SuluToken"))
+	req.Header.Add("Authorization", "Bearer "+os.Getenv("SULUTOKEN"))
 
 	resp, err := client.Do(req)
 

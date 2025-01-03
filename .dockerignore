@@ -1,0 +1,11 @@
+tmp
+.air.toml
+node_module
+.vscode
+built
+dist
+# Ignore ESLint, Prettier, and other configuration files that aren't needed in the final image
+.eslint*
+.prettier*
+.editorconfig
+.DS_Store

@@ -13,8 +13,8 @@ var DBClient *mongo.Client
 func DbConnect() (*mongo.Client, error) {
 
 	var err error
-	username := os.Getenv("User_name")
-	password := os.Getenv("Db_password")
+	username := os.Getenv("USERNAME")
+	password := os.Getenv("DB_PASSWORD")
 	// Use the SetServerAPIOptions() method to set the version of the Stable API on the client
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
