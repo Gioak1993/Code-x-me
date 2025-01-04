@@ -24,6 +24,7 @@ type CodeChallenge struct {
 	ID                 primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	ProblemName        string             `bson:"problem_name" json:"problem_name"`
 	ProblemExplanation string             `bson:"problem_explanation" json:"problem_explanation"`
+	Examples           string             `bson:"examples" json:"examples"`
 	InputsOutputs      []TestCase         `bson:"inputs_outputs" json:"inputs_outputs"` // JSON string
 	Constraints        string             `bson:"constraints" json:"constraints"`
 	Difficulty         string             `bson:"difficulty" json:"difficulty"`
@@ -59,6 +60,7 @@ func CreateChallenge(c *gin.Context) {
 	coll := initializers.DBClient.Database("codexme").Collection("challenges")
 	doc := CodeChallenge{ProblemName: challenge.ProblemName,
 		ProblemExplanation: challenge.ProblemExplanation,
+		Examples:           challenge.Examples,
 		InputsOutputs:      challenge.InputsOutputs,
 		Constraints:        challenge.Constraints,
 		Difficulty:         challenge.Difficulty,
@@ -162,11 +164,11 @@ func buildExecutionCode(languageID int, sourceCode string, inputs []interface{})
 		inputStr += fmt.Sprintf("%v,", input)
 	}
 	inputStr = strings.TrimRight(inputStr, ",") // Remove trailing comma
-
 	// Check if the language has a specific template
 	template, found := languageTemplates[languageID]
 	if found {
-		return fmt.Sprintf("%s\n%s", sourceCode, fmt.Sprintf(template, inputStr))
+		fmt.Printf("\n%s\n%s\n", sourceCode, fmt.Sprintf(template, inputStr))
+		return fmt.Sprintf("\n%s\n%s\n", sourceCode, fmt.Sprintf(template, inputStr))
 	}
 
 	// Default fallback if no template is found
@@ -203,18 +205,18 @@ func SubmitChallenge(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "an error was found when searching the challenge"})
 		return
 	}
-
 	var testingsSubmission []api.RequestsJudgeZeroApi
 
 	for _, testCase := range challenge.InputsOutputs {
+
 		sourceCode := buildExecutionCode(submission.LanguageId, submission.SourceCode, testCase.Input)
 
 		expectedOutputStr := fmt.Sprintf("%v", testCase.ExpectedOutput)
 
 		testingsSubmission = append(testingsSubmission, api.RequestsJudgeZeroApi{
-			SourceCode:             sourceCode,
-			LanguageID:             submission.LanguageId,
-			ExpectedOutput:         expectedOutputStr,
+			SourceCode:     sourceCode,
+			LanguageID:     submission.LanguageId,
+			ExpectedOutput: expectedOutputStr,
 		})
 
 	}
@@ -230,18 +232,21 @@ func SubmitChallenge(c *gin.Context) {
 
 out:
 	for _, result := range results {
-
+		fmt.Println(result)
 		//if there is a syntax error the null will make the server take to much time,
 		if result["stdout"] == nil {
 			c.JSON(http.StatusOK, gin.H{"error": "there is an error in the code"})
-			
+			return
 		}
 		expected := strings.TrimSpace(result["expected_output"].(string))
 		stdout := strings.TrimSpace(result["stdout"].(string))
+
 		if expected != stdout {
 			challengeBool = false
 			break out
 		}
+
+		fmt.Printf("expected: %s , received: %s", expected, stdout)
 	}
 
 	// logic if the challenge is correct or incorrect
@@ -261,7 +266,7 @@ out:
 	}
 }
 
-//use to record the users submissions
+// use to record the users submissions
 func RecordSubmission(coll *mongo.Collection, submission CurrentSubmission, passed bool) {
 
 	doc := RecordedSubmissions{UserID: submission.UserID,

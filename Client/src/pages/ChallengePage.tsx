@@ -12,6 +12,7 @@ type Challenge = {
   id: string;
   problem_explanation: string;
   problem_name: string;
+  examples: string;
   difficulty: string;
   constraints: string;
 };
@@ -90,6 +91,12 @@ const ChallengePage = () => {
           </h3>
           <p className="text-gray-900 dark:text-white">
             {challenge?.problem_explanation}
+          </p>
+          <h3 className="text-3xl text-gray-900 dark:text-white">
+            Example
+          </h3>
+          <p className="text-gray-900 dark:text-white">
+            {challenge?.examples}
           </p>
           <h3 className="text-3xl text-gray-900 dark:text-white">
             Constraints

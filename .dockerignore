@@ -1,11 +1,11 @@
-tmp
-.air.toml
-node_module
-.vscode
-built
-dist
+server/tmp
+server/.air.toml
+client/node_module
+client/.vscode
+client/built
+client/dist
 # Ignore ESLint, Prettier, and other configuration files that aren't needed in the final image
-.eslint*
-.prettier*
-.editorconfig
-.DS_Store
+client/.eslint*
+client/.prettier*
+client/.editorconfig
+client/.DS_Store

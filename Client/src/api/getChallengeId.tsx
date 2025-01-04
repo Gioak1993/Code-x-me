@@ -4,6 +4,7 @@ type Challenge = {
   id: string;
   problem_explanation: string;
   problem_name: string;
+  examples: string;
   difficulty: string;
   constraints: string;
 
@@ -16,6 +17,7 @@ const getChallenge = async (id: string ) => {
       id: response.data.id,
       problem_name: response.data.problem_name,
       problem_explanation: response.data.problem_explanation,
+      examples: response.data.examples,
       difficulty: response.data.difficulty,
       constraints: response.data.constraints
     };

@@ -1,0 +1,21 @@
+# Stage 1: Build the Go application
+FROM golang:1.23 AS builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Install Air for hot reloading
+RUN go install github.com/air-verse/air@latest
+
+# Copy go.mod and go.sum to leverage Docker cache
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download && go mod verify
+
+# Copy the entire project source code
+COPY . .
+
+EXPOSE 4000
+
+CMD ["air"]

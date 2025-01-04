@@ -47,14 +47,15 @@ const Challenges = () => {
       <h1 className="m-5 bg-white text-center text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white sm:text-5xl">
         Challenges
       </h1>
-      <Table className="mx-auto my-10 max-w-6xl">
+      <Table className="mx-auto my-10 max-w-xl">
         <TableHead>
-          <Table.HeadCell>Challenge</Table.HeadCell>
+          <Table.HeadCell>Challenges</Table.HeadCell>
           <Table.HeadCell>Difficulty</Table.HeadCell>
         </TableHead>
         <Table.Body>
           {challenges.map((challenge) => (
             <Table.Row
+              className="cursor-pointer"
               key={challenge.id}
               onClick={() => handleClick(challenge.id)}
             >

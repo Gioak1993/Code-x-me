@@ -1,3 +1,4 @@
+name: codexme
 services:
   # Backend: Go API
   backend:

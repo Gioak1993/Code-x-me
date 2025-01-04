@@ -32,7 +32,7 @@ COPY --from=builder /app/main .
 
 
 # Expose the backend port (adjust if different)
-EXPOSE 4000
+EXPOSE 8080
 
 # Command to run the application
 CMD ["./main"]
