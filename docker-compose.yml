@@ -17,7 +17,7 @@ services:
     build:
       context: ./client
     ports:
-      - "80:80"  # Expose Nginx on port 80
+      - "5173:5173"  # Expose Nginx on port 80
     depends_on:
       - backend
     networks:
@@ -26,3 +26,5 @@ services:
 networks:
   codex_network:
     driver: bridge
+
+
