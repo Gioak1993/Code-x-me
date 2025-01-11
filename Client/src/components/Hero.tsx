@@ -1,4 +1,6 @@
 import { Button, Carousel } from "flowbite-react"
+import { Link } from 'react-router-dom';
+
 
 
 export function Hero () {
@@ -19,7 +21,7 @@ export function Hero () {
           </div>
           <div className="flex flex-col gap-4 mt-8 sm:flex-row">
             {/* <a href="/playground"><Button>Donate now</Button></a> */}
-            <a href="/playground"><Button color='blue'>Go to the Playground</Button></a>
+            <Link to="/playground"><Button color='blue'>Go to the Playground</Button></Link>
           </div>
           <div className="mt-4 sm:border-t sm:border-gray-100 sm:mt-8 sm:pt-8 dark:border-gray-700">
             <p className="hidden text-base font-medium text-gray-500 sm:block">

@@ -1,6 +1,6 @@
 "use-client";
 
-import { Layout } from "../layout/Layout";
+import { Layout } from "../layout/Layout.tsx";
 import getChallenges from "../api/getChallenges.tsx";
 import { Table, TableHead } from "flowbite-react";
 import { useNavigate } from "react-router-dom";

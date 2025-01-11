@@ -1,4 +1,4 @@
-import { Layout } from "../layout/Layout";
+import { Layout } from "../layout/Layout.tsx";
 import { Hero } from "../components/Hero.tsx";
 
 const Home = () => {

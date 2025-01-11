@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:4000", 
+  baseURL: "https://codexme.net/api", 
   withCredentials: true, // Automatically send cookies
 });
 

@@ -5,7 +5,7 @@ import { Dropdown, Button, useThemeMode, Badge } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Card } from "./Card.tsx";
 import submitChallenge from "../api/sumbitChallenge.tsx";
-import { useAuth } from "../api/authContext";
+import { useAuth } from "../api/authContext.tsx";
 import { useParams } from "react-router";
 import getChallenge from "../api/getChallengeId.tsx"
 
