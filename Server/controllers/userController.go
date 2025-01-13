@@ -113,8 +113,8 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteDefaultMode)
-	c.SetCookie("Authorization", tokenString, 3600, "/", "localhost", false, false)
+	c.SetSameSite(http.SameSiteNoneMode)   													//for production
+	c.SetCookie("Authorization", tokenString, 3600, "/", "codexme.net", true, true)
 
 	c.JSON(http.StatusOK, gin.H{})
 

@@ -1,7 +1,7 @@
 "use client";
 
-
-import { Button, Checkbox, Label, TextInput } from "flowbite-react";
+// import { Checkbox } from "flowbite-react";
+import { Button, Label, TextInput } from "flowbite-react";
 import { useState } from "react";
 import submitSignUpForm from "../api/signUpRequest.tsx"
 import { useNavigate, Link } from "react-router-dom";
@@ -112,14 +112,14 @@ export function RegisterForm() {
               </div>
               
               <div className="flex items-start">
-                <div className="flex h-5 items-center">
+                {/* <div className="flex h-5 items-center">
                   <Checkbox
                     aria-describedby="terms-background"
                     id="terms-background"
                     required
                   />
-                </div>
-                <div className="ml-3 text-sm">
+                </div> */}
+                {/* <div className="ml-3 text-sm">
                   <Label
                     htmlFor="terms-background"
                     className="text-gray-500 dark:text-gray-300"
@@ -132,7 +132,7 @@ export function RegisterForm() {
                       Terms and Conditions
                     </a>
                   </Label>
-                </div>
+                </div> */}
               </div>
               <Button color='blue' type="submit" className="w-full">
                 Create an account

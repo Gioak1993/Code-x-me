@@ -1,7 +1,9 @@
-import { Button, Label, TextInput, Checkbox } from "flowbite-react";
+import { Button, Label, TextInput } from "flowbite-react";
 import  SubmitLogIn  from "../api/logInRequest"
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+
+// import { Checkbox } from "flowbite-react";
 
 export function LoginForm() {
 
@@ -27,9 +29,11 @@ export function LoginForm() {
 
     async function handleSubmit (event: React.FormEvent<HTMLFormElement>)  {
 
+
       event.preventDefault()
       await SubmitLogIn(formData)
       navigate('/')
+      location.reload();
 
     };
 
@@ -86,7 +90,7 @@ export function LoginForm() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-start">
-                    <div className="flex h-5 items-center">
+                    {/* <div className="flex h-5 items-center">
                       <Checkbox id="remember-background" required />
                     </div>
                     <div className="ml-3 text-sm">
@@ -96,14 +100,14 @@ export function LoginForm() {
                       >
                         Remember me
                       </Label>
-                    </div>
+                    </div> */}
                   </div>
-                  <a
+                  {/* <a
                     href="#"
                     className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500"
                   >
                     Forgot password?
-                  </a>
+                  </a> */}
                 </div>
                 <Button color='blue' type="submit" className="w-full">
                   Log in to your account
