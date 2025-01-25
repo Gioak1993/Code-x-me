@@ -21,8 +21,6 @@ export function LoginForm() {
         ...prevData,
         [name]: value,
       }));
-      console.log(formData)
-
     };
     
     const navigate = useNavigate()

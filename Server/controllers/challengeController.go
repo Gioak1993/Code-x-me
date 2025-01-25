@@ -24,7 +24,7 @@ type CodeChallenge struct {
 	ID                 primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	ProblemName        string             `bson:"problem_name" json:"problem_name"`
 	ProblemExplanation string             `bson:"problem_explanation" json:"problem_explanation"`
-	Examples           string             `bson:"examples" json:"examples"`
+	Examples           []string           `bson:"examples" json:"examples"`
 	InputsOutputs      []TestCase         `bson:"inputs_outputs" json:"inputs_outputs"` // JSON string
 	Constraints        string             `bson:"constraints" json:"constraints"`
 	Difficulty         string             `bson:"difficulty" json:"difficulty"`
@@ -80,6 +80,7 @@ func CreateChallenge(c *gin.Context) {
 }
 
 func GetChallenges(c *gin.Context) {
+	
 	coll := initializers.DBClient.Database("codexme").Collection("challenges")
 
 	cursor, err := coll.Find(context.TODO(), bson.D{})

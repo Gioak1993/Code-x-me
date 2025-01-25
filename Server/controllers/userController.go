@@ -113,9 +113,15 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteNoneMode)   													//for production
-	c.SetCookie("Authorization", tokenString, 3600, "/", "codexme.net", true, true)
+	environment := os.Getenv("ENVIRONMENT")
 
+	if environment == "development" {
+		c.SetSameSite(http.SameSiteLaxMode)   													//for production
+		c.SetCookie("Authorization", tokenString, 3600, "/", "localhost", false, false)
+	} else {
+		c.SetSameSite(http.SameSiteStrictMode)   													//for production
+		c.SetCookie("Authorization", tokenString, 3600, "/", "codexme.net", true, true)
+	}
 	c.JSON(http.StatusOK, gin.H{})
 
 }

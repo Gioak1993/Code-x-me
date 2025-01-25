@@ -1,8 +1,8 @@
 services:
   backend:
     build:
-      context: ./server
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: Dockerfile.server.dev
     ports:
       - "4000:4000"
     volumes:
@@ -15,8 +15,8 @@ services:
 
   frontend:
     build:
-      context: ./client
-      dockerfile: Dockerfile.dev
+      context: .
+      dockerfile: Dockerfile.client.dev
     ports:
       - "5173:5173"
     volumes:

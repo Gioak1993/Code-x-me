@@ -4,7 +4,7 @@ type Challenge = {
   id: string;
   problem_explanation: string;
   problem_name: string;
-  examples: string;
+  examples: string[];
   difficulty: string;
   constraints: string;
 
