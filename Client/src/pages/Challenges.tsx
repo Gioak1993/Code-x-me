@@ -5,6 +5,7 @@ import getChallenges from "../api/getChallenges.tsx";
 import { Table, TableHead } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import Pagination from "../components/Pagination.tsx";
 
 type Challenge = {
   id: string;
@@ -14,7 +15,10 @@ type Challenge = {
 
 const Challenges = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const [currentPage, setCurrentPage] = useState(1);
+  const challengesPerPage = 10;
 
   useEffect(() => {
     const fetchChallenges = async () => {
@@ -27,11 +31,23 @@ const Challenges = () => {
     };
 
     fetchChallenges();
-  }, []); // Empty dependency array ensures the effect runs once after the component mounts
+  }, []);
 
   const handleClick = (id: string) => {
     navigate(`/challenge/${id}`);
   };
+
+  const indexOfLastChallenge = currentPage * challengesPerPage;
+  const indexOfFirstChallenge = indexOfLastChallenge - challengesPerPage;
+  
+  const filteredChallenges = challenges.filter(challenge =>
+    challenge.problem_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    challenge.difficulty.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const currentChallenges = filteredChallenges.slice(indexOfFirstChallenge, indexOfLastChallenge);
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
   if (challenges.length === 0) {
     return (
       <Layout className="min-h-screen">
@@ -47,13 +63,20 @@ const Challenges = () => {
       <h1 className="m-5 bg-white text-center text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white sm:text-5xl">
         Challenges
       </h1>
+      <input
+        type="text"
+        placeholder="Search challenges by name or difficulty..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="mx-auto my-5 block w-1/2 p-2 border rounded"
+      />
       <Table className="mx-auto my-10 max-w-xl">
         <TableHead>
           <Table.HeadCell>Challenges</Table.HeadCell>
           <Table.HeadCell>Difficulty</Table.HeadCell>
         </TableHead>
         <Table.Body>
-          {challenges.map((challenge) => (
+          {currentChallenges.map((challenge) => (
             <Table.Row
               className="cursor-pointer"
               key={challenge.id}
@@ -65,6 +88,11 @@ const Challenges = () => {
           ))}
         </Table.Body>
       </Table>
+      <Pagination
+        challengesPerPage={challengesPerPage}
+        totalChallenges={filteredChallenges.length}
+        paginate={paginate}
+      />
     </Layout>
   );
 };
