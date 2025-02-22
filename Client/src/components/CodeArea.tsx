@@ -186,11 +186,11 @@ export function CodeArea() {
     }
   }
 
-  async function handleOutputChange() {
+  async function handleRunButton() {
     try {
       const result = await submitCode(editor.value, editor.languageId);
       console.log(result);
-      setOutput({ ...output, value: result.output }); // display this in your UI
+      setOutput({ ...output, value: result.output + result.compile_output }); // this is what will be display in the output
     } catch (error) {
       console.log(error);
       setOutput({ ...output, value: "Error submitting code." });
@@ -214,7 +214,7 @@ export function CodeArea() {
             </Dropdown.Item>
           ))}
         </Dropdown>
-        <Button color="blue" className="mx-1" onClick={handleOutputChange}>
+        <Button color="blue" className="mx-1" onClick={handleRunButton}>
           Run
         </Button>
       </Card>

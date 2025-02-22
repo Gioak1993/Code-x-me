@@ -68,7 +68,7 @@ const Challenges = () => {
         placeholder="Search challenges by name or difficulty..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="mx-auto my-5 block w-1/2 p-2 border rounded"
+        className="mx-auto my-5 block w-1/2 p-2 border rounded dark:bg-gray-900 dark:text-white"
       />
       <Table className="mx-auto my-10 max-w-xl">
         <TableHead>

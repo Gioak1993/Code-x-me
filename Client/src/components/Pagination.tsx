@@ -20,7 +20,7 @@ const Pagination: React.FC<PaginationProps> = ({ challengesPerPage, totalChallen
           <li key={number}>
             <button
               onClick={() => paginate(number)}
-              className="px-4 py-2 border rounded hover:bg-gray-200"
+              className="px-4 py-2 border rounded hover:bg-gray-200 dark:bg-gray-900 dark:text-white"
             >
               {number}
             </button>

@@ -199,18 +199,22 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 
 		if statusID.Int() > 3 {
 
+			status := statusID
 			output := gjson.Get(result, "stdout")
 			executionTime := gjson.Get(result, "time")
 			memory := gjson.Get(result, "memory")
 			expected_output := gjson.Get(result, "expected_output")
+			compile_output := gjson.Get(result, "compile_output")
+
 
 			results := map[string]string{
-				"status":          "success",
+				"status":          status.String(),
 				"output":          output.String(),
 				"time":            executionTime.String(),
 				"memory":          memory.String(),
 				"message":         "code executed successfully",
 				"expected_output": expected_output.String(),
+				"compile_output": compile_output.String(),
 			}
 			return results // when the output is ready to be shown we return the response
 		} else {
