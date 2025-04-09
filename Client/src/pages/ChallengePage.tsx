@@ -1,7 +1,7 @@
 "use-client";
 
 import getChallenge from "../api/getChallengeId";
-import { useAuth } from "../api/authContext";
+// import { useAuth } from "../api/authContext";
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import { Layout } from "../layout/Layout";
@@ -22,7 +22,7 @@ const ChallengePage = () => {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   useEffect(() => {
     const fetchChallenge = async () => {
@@ -45,15 +45,15 @@ const ChallengePage = () => {
     fetchChallenge();
   }, [id]);
 
-  if (!user) {
-    return (
-      <Layout className="">
-        <h1 className="mx-auto my-3 text-3xl text-gray-900 dark:text-white">
-          Please log in to view this challenge.
-        </h1>
-      </Layout>
-    );
-  }
+  // if (!user) {
+  //   return (
+  //     <Layout className="">
+  //       <h1 className="mx-auto my-3 text-3xl text-gray-900 dark:text-white">
+  //         Please log in to view this challenge.
+  //       </h1>
+  //     </Layout>
+  //   );
+  // }
 
   if (loading) {
     return (
@@ -89,6 +89,7 @@ const ChallengePage = () => {
           <h3 className="text-xl my-2 text-gray-900 dark:text-white">
             Problem Explanation
           </h3>
+          
           <p className="text-gray-900 dark:text-white">
             {challenge?.problem_explanation}
           </p>

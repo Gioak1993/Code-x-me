@@ -164,7 +164,7 @@ out:
 			return nil, fmt.Errorf("error in batchJudgeApi.GetBatchResults(tokens)")
 		}
 
-		//here is when i want the if statement to check if the statusids is returning only 3 or 4
+		//here is when i want to check if the statusids is returning only 3 or 4
 		// json.Get submissions.#.status_id check all the submission ids on the json,
 		//if they are not 3 or 4 it would return that doesnt exists
 		arrayLenght := int(gjson.Get(batchresults, "submissions.#").Int()) // the lenght of the submissions send

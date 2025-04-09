@@ -41,9 +41,6 @@ func SubmissionBatch(c *gin.Context) {
 		return
 	}
 
-	//log the received data
-	// fmt.Printf("Received: %+v\n", batch)
-
 	// Prepare the submissions for the Judge0 API
 	var submissions []api.RequestsJudgeZeroApi
 	for _, s := range batch.Submissions {

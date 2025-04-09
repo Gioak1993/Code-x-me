@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	// "github.com/tidwall/gjson"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -233,15 +234,28 @@ func SubmitChallenge(c *gin.Context) {
 
 out:
 	for _, result := range results {
-		fmt.Println(result)
-		//if there is a syntax error the null will make the server take to much time,
-		if result["stdout"] == nil {
-			c.JSON(http.StatusOK, gin.H{"error": "there is an error in the code"})
-			return
-		}
+
 		expected := strings.TrimSpace(result["expected_output"].(string))
 		stdout := strings.TrimSpace(result["stdout"].(string))
+		//if there is a syntax error the null will make the server take to much time, lets add the compiler output
 
+		compile_output := result["compile_output"]
+		if compile_output != nil  {
+			// Safely convert compile_output to string
+			var compileOutputStr string
+
+			if s, ok := compile_output.(string); ok {
+				compileOutputStr = s
+			} else {
+				// Handle non-string types by converting to a string representation
+				compileOutputStr = fmt.Sprintf("%v", compile_output)
+			}
+			
+			stdout += compileOutputStr
+		}
+
+		fmt.Println(result)
+		
 		if expected != stdout {
 			challengeBool = false
 			break out
@@ -252,38 +266,39 @@ out:
 
 	// logic if the challenge is correct or incorrect
 
-	coll = initializers.DBClient.Database("codexme").Collection("submissions")
+	// coll = initializers.DBClient.Database("codexme").Collection("submissions")  
 
 	if challengeBool {
 
-		RecordSubmission(coll, submission, challengeBool)
+		// RecordSubmission(coll, submission, challengeBool)
 		c.JSON(http.StatusOK, gin.H{"message": "Challenge completed successfully"})
 
 	} else {
 
-		RecordSubmission(coll, submission, challengeBool)
+		// RecordSubmission(coll, submission, challengeBool)
 		c.JSON(http.StatusOK, gin.H{"message": "Challenge failed"})
 
 	}
 }
 
-// use to record the users submissions
-func RecordSubmission(coll *mongo.Collection, submission CurrentSubmission, passed bool) {
+// use to record the users submissions, this logic would be used when we go back to record subssmissions for users
 
-	doc := RecordedSubmissions{UserID: submission.UserID,
-		ChallengeID:    submission.ChallengeID,
-		LanguageId:     submission.LanguageId,
-		SourceCode:     submission.SourceCode,
-		Passed:         passed,
-		SubmissionTime: time.Now(),
-	}
+// func RecordSubmission(coll *mongo.Collection, submission CurrentSubmission, passed bool) {
 
-	result, err := coll.InsertOne(context.TODO(), doc)
-	if err != nil {
-		fmt.Println("error when inserting attempt", err)
-		return
-	}
+// 	doc := RecordedSubmissions{UserID: submission.UserID,
+// 		ChallengeID:    submission.ChallengeID,
+// 		LanguageId:     submission.LanguageId,
+// 		SourceCode:     submission.SourceCode,
+// 		Passed:         passed,
+// 		SubmissionTime: time.Now(),
+// 	}
 
-	fmt.Printf("Inserted attempt with _id: %v\n", result.InsertedID)
+// 	result, err := coll.InsertOne(context.TODO(), doc)
+// 	if err != nil {
+// 		fmt.Println("error when inserting attempt", err)
+// 		return
+// 	}
 
-}
+// 	fmt.Printf("Inserted attempt with _id: %v\n", result.InsertedID)
+
+// }

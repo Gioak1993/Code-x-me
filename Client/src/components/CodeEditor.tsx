@@ -5,7 +5,7 @@ import { Dropdown, Button, useThemeMode, Badge } from "flowbite-react";
 import { useState, useEffect } from "react";
 import { Card } from "./Card.tsx";
 import submitChallenge from "../api/sumbitChallenge.tsx";
-import { useAuth } from "../api/authContext.tsx";
+// import { useAuth } from "../api/authContext.tsx";
 import { useParams } from "react-router";
 import getChallenge from "../api/getChallengeId.tsx"
 
@@ -53,7 +53,7 @@ export function CodeEditor() {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  // const { user } = useAuth(); 
   const [result, setResult] = useState({
     value: "Send yout code to see the result",
     color: "gray",
@@ -123,8 +123,12 @@ export function CodeEditor() {
   }, [id]);
 
   async function handleSubmit () {
-    if (user && challenge) {
-    const result = await submitChallenge(user.id, challenge.id, editor.value, editor.languageId)
+    //if the user is required then
+    // if (user && challenge)
+
+
+    if (challenge) {
+    const result = await submitChallenge(challenge.id, editor.value, editor.languageId)
       if (result["message"] === "Challenge completed successfully") {
         setResult({value: "Challenge completed successfully", color: "green"})
       }
@@ -132,9 +136,9 @@ export function CodeEditor() {
         setResult({value: "Challenge failed", color: "red"})
       }
     }
-    else {  
-      setResult({value: "Please login to submit a challenge", color: "gray"})
-    }
+    // else {  
+    //   setResult({value: "Please login to submit a challenge", color: "gray"})
+    // }
   }
 
   if (loading) {
@@ -148,15 +152,15 @@ export function CodeEditor() {
   if (!challenge) {
     return <div>No challenge found.</div>;
   }
-  if (!user) {
-    return (
-      <Card className="m-2 grid grid-cols-1">
-        <span className="bg-white text-3xl font-light tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white">
-          Please login to submit a challenge
-        </span>
-      </Card>
-    );
-  }
+  // if (!user) {
+  //   return (
+  //     <Card className="m-2 grid grid-cols-1">
+  //       <span className="bg-white text-3xl font-light tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white">
+  //         Please login to submit a challenge
+  //       </span>
+  //     </Card>
+  //   );
+  // }
 
   return(
     <Card className="m-2 grid">

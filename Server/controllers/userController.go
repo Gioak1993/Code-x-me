@@ -116,7 +116,7 @@ func Login(c *gin.Context) {
 	environment := os.Getenv("ENVIRONMENT")
 
 	if environment == "development" {
-		c.SetSameSite(http.SameSiteLaxMode)   													//for production
+		c.SetSameSite(http.SameSiteLaxMode)   													//for development 
 		c.SetCookie("Authorization", tokenString, 3600, "/", "localhost", false, false)
 	} else {
 		c.SetSameSite(http.SameSiteStrictMode)   													//for production
