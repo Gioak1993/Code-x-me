@@ -98,9 +98,9 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	// Add Headers
 
-	req.Header.Set("content-type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+ApiKey)
+	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("x-rapidapi-host", "judge0-ce.p.rapidapi.com")
+	req.Header.Set("x-rapidapi-key", ApiKey)
 
 	//do the request
 
@@ -143,8 +143,9 @@ func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
 	}
 	// Add the Headers
 
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+ApiKey)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("x-rapidapi-host", "judge0-ce.p.rapidapi.com")
+	req.Header.Set("x-rapidapi-key", ApiKey)
 
 	resp, err := client.Do(req)
 	if err != nil {
