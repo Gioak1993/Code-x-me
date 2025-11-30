@@ -25,8 +25,8 @@ func init() {
 
 	client = &http.Client{Timeout: 30 * time.Second}
 	initializers.LoadEnvVariables()
-	apiKey := os.Getenv("SULUTOKEN")
-	if apiKey == "" {
+	ApiKey = os.Getenv("RAPIDAPI_KEY")
+	if ApiKey == "" {
 		fmt.Println("Api Key not set")
 	}
 }
@@ -68,7 +68,7 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	// Define the URL with query parameters
 
-	baseURL := "https://judge0-ce.p.sulu.sh/submissions"
+	baseURL := "https://judge0-ce.p.rapidapi.com/submissions"
 	params := url.Values{}
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
@@ -77,7 +77,7 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	// Prepare the JSON payload
 
-	payload := map[string]interface{}{
+	payload := map[string] any {
 		"language_id":               r.LanguageID,
 		"source_code":               r.SourceCode,
 		"expected_output":           "null",
@@ -86,30 +86,27 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	jsonDATA, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Println("Error marshaling the json", err)
+		return "", "", fmt.Errorf("marshal payload: %w", err)
 	}
-
-	fmt.Print(bytes.NewBuffer(jsonDATA))
 
 	// Create the post Request
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonDATA))
 	if err != nil {
-		fmt.Println("Error creating request", err)
+		return "", "", fmt.Errorf("create request: %w", err)
 	}
 
 	// Add Headers
 
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("SULUTOKEN"))
+	req.Header.Set("Authorization", "Bearer "+ApiKey)
 
 	//do the request
 
 	resp, err := client.Do(req)
-
 	if err != nil {
-		fmt.Println("Error making the request", err)
+		return "", "", fmt.Errorf("make request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -117,7 +114,7 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading the response:", err)
+		return "", "", fmt.Errorf("read response: %w", err)
 	}
 	// if the status is 201, we now need to make another
 	// call with the token to get the output of the code
@@ -134,7 +131,7 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
 
 	// Define the url with the get request parameters
-	responseURL := "https://judge0-ce.p.sulu.sh//submissions/" + token
+	responseURL := "https://judge0-ce.p.rapidapi.com/submissions/" + token
 	params := url.Values{}
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
@@ -142,17 +139,16 @@ func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
 
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
-		fmt.Println("Error creating get request", err)
+		return "", fmt.Errorf("create get request: %w", err)
 	}
 	// Add the Headers
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+os.Getenv("SULUTOKEN"))
+	req.Header.Add("Authorization", "Bearer "+ApiKey)
 
 	resp, err := client.Do(req)
-
 	if err != nil {
-		fmt.Println("Error making the get request", err)
+		return "", fmt.Errorf("make get request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -160,14 +156,13 @@ func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading the response:", err)
-
+		return "", fmt.Errorf("read response: %w", err)
 	}
 
 	return string(body), nil
 }
 
-func JudgeZero(languageId int, sourceCode string) interface{} {
+func JudgeZero(languageId int, sourceCode string) any {
 
 	judgeAPI := RequestsJudgeZeroApi{
 		LanguageID: languageId,
@@ -176,7 +171,7 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 
 	status, token, err := judgeAPI.GetToken()
 	if err != nil {
-		fmt.Println("Error:", err)
+		return fmt.Errorf("get token: %w", err)
 	}
 	fmt.Println(status, token)
 
@@ -191,7 +186,7 @@ func JudgeZero(languageId int, sourceCode string) interface{} {
 	for i := 1; i < maxTries; i++ {
 		result, err := judgeAPI.GetResults(token)
 		if err != nil {
-			fmt.Println("Get this error when retrieving results:", err)
+			return fmt.Errorf("get results: %w", err)
 		}
 
 		statusID := gjson.Get(result, "status.id")

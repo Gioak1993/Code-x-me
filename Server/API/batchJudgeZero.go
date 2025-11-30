@@ -6,13 +6,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/tidwall/gjson"
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
+
+	"github.com/tidwall/gjson"
 )
 
 type BatchSubmission struct {
@@ -28,7 +28,7 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 
 	// Define the URL with query parameters
 
-	baseURL := "https://judge0-ce.p.sulu.sh/submissions/batch"
+	baseURL := "https://judge0-ce.p.rapidapi.com/submissions/batch"
 	params := url.Values{}
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
@@ -37,29 +37,27 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 
 	payload := BatchSubmission{Submissions: submissions}
 	jsonDATA, err := json.Marshal(payload)
-
 	if err != nil {
-		fmt.Println("Error marshaling the json", err)
+		return "", fmt.Errorf("marshal payload: %w", err)
 	}
 
 	// Create the post Request
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonDATA))
 	if err != nil {
-		fmt.Println("Error creating request", err)
+		return "", fmt.Errorf("create request: %w", err)
 	}
 
 	// Add Headers
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("SULUTOKEN"))
+	req.Header.Set("Authorization", "Bearer "+ApiKey)
 
 	//do the request
 
 	resp, err := client.Do(req)
-
 	if err != nil {
-		fmt.Println("Error making the request", err)
+		return "", fmt.Errorf("make request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -67,7 +65,7 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("an error occur reading the response %s", err)
+		return "", fmt.Errorf("read response: %w", err)
 	}
 
 	// if the status is 201, we now need to make another
@@ -76,10 +74,8 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 	if resp.StatusCode == 201 {
 
 		var tokens []Token
-		err := json.Unmarshal(body, &tokens)
-
-		if err != nil {
-			return "", fmt.Errorf("an error occur when unmarshaling the body %s", err)
+		if err := json.Unmarshal(body, &tokens); err != nil {
+			return "", fmt.Errorf("unmarshal body: %w", err)
 		}
 
 		//iterate over the tokens to build the comma separate string
@@ -97,13 +93,13 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 
 	}
 
-	return "", fmt.Errorf("an error occur did not get status code 201")
+	return "", fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(body))
 }
 
 func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
 
 	// Define the url with the get request parameters
-	responseURL := "https://judge0-ce.p.sulu.sh//submissions/batch?"
+	responseURL := "https://judge0-ce.p.rapidapi.com/submissions/batch"
 	params := url.Values{}
 	params.Add("tokens", tokens)
 	params.Add("base64_encoded", "false")
@@ -112,17 +108,16 @@ func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
 
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
-		fmt.Println("Error creating get request", err)
+		return "", fmt.Errorf("create get request: %w", err)
 	}
 	// Add the Headers
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+os.Getenv("SULUTOKEN"))
+	req.Header.Add("Authorization", "Bearer "+ApiKey)
 
 	resp, err := client.Do(req)
-
 	if err != nil {
-		fmt.Println("Error making the get request", err)
+		return "", fmt.Errorf("make get request: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -130,14 +125,13 @@ func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading the response:", err)
-
+		return "", fmt.Errorf("read response: %w", err)
 	}
 
 	return string(body), nil
 }
 
-func BatchJudgeZero(batch []RequestsJudgeZeroApi) ([]map[string]interface{}, error) {
+func BatchJudgeZero(batch []RequestsJudgeZeroApi) ([]map[string]any, error) {
 
 	batchJudgeApi := BatchSubmission{
 		Submissions: batch,
@@ -193,13 +187,13 @@ out:
 	}
 
 	// Slice to store each submission's data
-	var submissionsData []map[string]interface{}
+	var submissionsData []map[string]any
 
 	// Use gjson to get the "submissions" array
 	submissions := gjson.Get(batchresults, "submissions")
 
 	submissions.ForEach(func(_, submission gjson.Result) bool {
-		data := make(map[string]interface{})
+		data := make(map[string]any)
 
 		// Populate the map with all key-value pairs from the JSON object
 		submission.ForEach(func(key, value gjson.Result) bool {
@@ -219,16 +213,16 @@ out:
 }
 
 // Helper function to convert gjson.Result to native Go types
-func parseGJSONValue(value gjson.Result) interface{} {
+func parseGJSONValue(value gjson.Result) any {
 	if value.IsArray() {
-		var array []interface{}
+		var array []any
 		value.ForEach(func(_, v gjson.Result) bool {
 			array = append(array, parseGJSONValue(v))
 			return true
 		})
 		return array
 	} else if value.IsObject() {
-		obj := make(map[string]interface{})
+		obj := make(map[string]any)
 		value.ForEach(func(k, v gjson.Result) bool {
 			obj[k.String()] = parseGJSONValue(v)
 			return true
