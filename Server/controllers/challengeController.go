@@ -17,8 +17,8 @@ import (
 )
 
 type TestCase struct {
-	Input          []interface{} `bson:"input" json:"input"` // Generic array for multiple input types
-	ExpectedOutput interface{}   `bson:"expected_output" json:"expected_output"`
+	Input          []any `bson:"input" json:"input"` // Generic array for multiple input types
+	ExpectedOutput any  `bson:"expected_output" json:"expected_output"`
 }
 
 type CodeChallenge struct {
@@ -81,7 +81,7 @@ func CreateChallenge(c *gin.Context) {
 }
 
 func GetChallenges(c *gin.Context) {
-	
+
 	coll := initializers.DBClient.Database("codexme").Collection("challenges")
 
 	cursor, err := coll.Find(context.TODO(), bson.D{})
@@ -160,7 +160,7 @@ var languageTemplates = map[int]string{
 }
 
 // Function to dynamically construct the execution logic
-func buildExecutionCode(languageID int, sourceCode string, inputs []interface{}) string {
+func buildExecutionCode(languageID int, sourceCode string, inputs []any) string {
 	inputStr := ""
 	for _, input := range inputs {
 		inputStr += fmt.Sprintf("%v,", input)
@@ -250,12 +250,12 @@ out:
 				// Handle non-string types by converting to a string representation
 				compileOutputStr = fmt.Sprintf("%v", compile_output)
 			}
-			
+
 			stdout += compileOutputStr
 		}
 
 		fmt.Println(result)
-		
+
 		if expected != stdout {
 			challengeBool = false
 			break out
@@ -266,7 +266,7 @@ out:
 
 	// logic if the challenge is correct or incorrect
 
-	// coll = initializers.DBClient.Database("codexme").Collection("submissions")  
+	// coll = initializers.DBClient.Database("codexme").Collection("submissions")
 
 	if challengeBool {
 
