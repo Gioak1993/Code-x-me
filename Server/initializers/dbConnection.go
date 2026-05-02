@@ -2,7 +2,10 @@ package initializers
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"os"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -11,25 +14,39 @@ import (
 var DBClient *mongo.Client
 
 func DbConnect() (*mongo.Client, error) {
-
-	var err error
-	username := os.Getenv("USERNAME")
-	password := os.Getenv("DB_PASSWORD")
-	// Use the SetServerAPIOptions() method to set the version of the Stable API on the client
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
+	opts := options.Client().ApplyURI(mongoURI()).SetServerAPIOptions(serverAPI)
 
-	opts := options.Client().ApplyURI("mongodb+srv://" + username + ":" + password + "@codexme.sr0ng.mongodb.net/?retryWrites=true&w=majority&appName=CodexMe").SetServerAPIOptions(serverAPI)
-
-	// // Create a new client and connect to the server
-	DBClient, err = mongo.Connect(context.TODO(), opts)
+	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("connect to mongodb: %w", err)
 	}
-	// // // // Send a ping to confirm a successful connection
-	if err := DBClient.Ping(context.TODO(), nil); err != nil {
-		panic(err)
+
+	if err := client.Ping(ctx, nil); err != nil {
+		return nil, fmt.Errorf("ping mongodb: %w", err)
 	}
-	// fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
-	return DBClient, err //dont forget to defer your connection when you use it outside this function
+
+	DBClient = client
+	return DBClient, nil
+}
+
+func mongoURI() string {
+	if uri := os.Getenv("MONGODB_URI"); uri != "" {
+		return uri
+	}
+
+	username := os.Getenv("DB_USERNAME")
+	if username == "" {
+		username = os.Getenv("USERNAME")
+	}
+	password := os.Getenv("DB_PASSWORD")
+
+	return fmt.Sprintf(
+		"mongodb+srv://%s:%s@codexme.sr0ng.mongodb.net/?retryWrites=true&w=majority&appName=CodexMe",
+		url.QueryEscape(username),
+		url.QueryEscape(password),
+	)
 }

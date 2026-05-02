@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"time"
 
@@ -18,16 +19,35 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-var client *http.Client
-var ApiKey string
+const defaultJudgeZeroBaseURL = "https://judge0-ce.p.rapidapi.com"
+
+type JudgeZeroClient struct {
+	BaseURL    string
+	HTTPClient *http.Client
+	APIKey     string
+}
+
+var DefaultJudgeZeroClient *JudgeZeroClient
 
 func init() {
-
-	client = &http.Client{Timeout: 30 * time.Second}
 	initializers.LoadEnvVariables()
-	ApiKey = os.Getenv("RAPIDAPI_KEY")
-	if ApiKey == "" {
+	apiKey := os.Getenv("RAPIDAPI_KEY")
+	if apiKey == "" {
 		fmt.Println("Api Key not set")
+	}
+
+	DefaultJudgeZeroClient = NewJudgeZeroClient(defaultJudgeZeroBaseURL, &http.Client{Timeout: 30 * time.Second}, apiKey)
+}
+
+func NewJudgeZeroClient(baseURL string, httpClient *http.Client, apiKey string) *JudgeZeroClient {
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: 30 * time.Second}
+	}
+
+	return &JudgeZeroClient{
+		BaseURL:    strings.TrimRight(baseURL, "/"),
+		HTTPClient: httpClient,
+		APIKey:     apiKey,
 	}
 }
 
@@ -64,20 +84,19 @@ type RequestsJudgeZeroApi struct {
 	CallbackURL                          string  `json:"callback_url,omitempty"`
 }
 
-func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
+func (j *JudgeZeroClient) GetToken(r RequestsJudgeZeroApi) (string, string, error) {
 
 	// Define the URL with query parameters
 
-	baseURL := "https://judge0-ce.p.rapidapi.com/submissions"
 	params := url.Values{}
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
 
-	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+	fullURL := fmt.Sprintf("%s/submissions?%s", j.BaseURL, params.Encode())
 
 	// Prepare the JSON payload
 
-	payload := map[string] any {
+	payload := map[string]any{
 		"language_id":               r.LanguageID,
 		"source_code":               r.SourceCode,
 		"expected_output":           "null",
@@ -100,11 +119,11 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 
 	req.Header.Set("Content-type", "application/json")
 	req.Header.Set("x-rapidapi-host", "judge0-ce.p.rapidapi.com")
-	req.Header.Set("x-rapidapi-key", ApiKey)
+	req.Header.Set("x-rapidapi-key", j.APIKey)
 
 	//do the request
 
-	resp, err := client.Do(req)
+	resp, err := j.HTTPClient.Do(req)
 	if err != nil {
 		return "", "", fmt.Errorf("make request: %w", err)
 	}
@@ -128,14 +147,17 @@ func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
 	return resp.Status, string(body), nil
 }
 
-func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
+func (r *RequestsJudgeZeroApi) GetToken() (string, string, error) {
+	return DefaultJudgeZeroClient.GetToken(*r)
+}
+
+func (j *JudgeZeroClient) GetResults(token string) (string, error) {
 
 	// Define the url with the get request parameters
-	responseURL := "https://judge0-ce.p.rapidapi.com/submissions/" + token
 	params := url.Values{}
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
-	fullURL := fmt.Sprintf("%s?%s", responseURL, params.Encode())
+	fullURL := fmt.Sprintf("%s/submissions/%s?%s", j.BaseURL, token, params.Encode())
 
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
@@ -145,9 +167,9 @@ func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Set("x-rapidapi-host", "judge0-ce.p.rapidapi.com")
-	req.Header.Set("x-rapidapi-key", ApiKey)
+	req.Header.Set("x-rapidapi-key", j.APIKey)
 
-	resp, err := client.Do(req)
+	resp, err := j.HTTPClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("make get request: %w", err)
 	}
@@ -163,14 +185,18 @@ func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
 	return string(body), nil
 }
 
-func JudgeZero(languageId int, sourceCode string) any {
+func (r *RequestsJudgeZeroApi) GetResults(token string) (string, error) {
+	return DefaultJudgeZeroClient.GetResults(token)
+}
+
+func (j *JudgeZeroClient) JudgeZero(languageId int, sourceCode string) any {
 
 	judgeAPI := RequestsJudgeZeroApi{
 		LanguageID: languageId,
 		SourceCode: sourceCode,
 	}
 
-	status, token, err := judgeAPI.GetToken()
+	status, token, err := j.GetToken(judgeAPI)
 	if err != nil {
 		return fmt.Errorf("get token: %w", err)
 	}
@@ -185,7 +211,7 @@ func JudgeZero(languageId int, sourceCode string) any {
 
 	//we use this label to break the loop on the desired condition
 	for i := 1; i < maxTries; i++ {
-		result, err := judgeAPI.GetResults(token)
+		result, err := j.GetResults(token)
 		if err != nil {
 			return fmt.Errorf("get results: %w", err)
 		}
@@ -201,7 +227,6 @@ func JudgeZero(languageId int, sourceCode string) any {
 			expected_output := gjson.Get(result, "expected_output")
 			compile_output := gjson.Get(result, "compile_output")
 
-
 			results := map[string]string{
 				"status":          status.String(),
 				"output":          output.String(),
@@ -209,7 +234,7 @@ func JudgeZero(languageId int, sourceCode string) any {
 				"memory":          memory.String(),
 				"message":         "code executed successfully",
 				"expected_output": expected_output.String(),
-				"compile_output": compile_output.String(),
+				"compile_output":  compile_output.String(),
 			}
 			return results // when the output is ready to be shown we return the response
 		} else {
@@ -217,4 +242,8 @@ func JudgeZero(languageId int, sourceCode string) any {
 		}
 	}
 	return ("Error trying to get the output")
+}
+
+func JudgeZero(languageId int, sourceCode string) any {
+	return DefaultJudgeZeroClient.JudgeZero(languageId, sourceCode)
 }

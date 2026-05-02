@@ -24,16 +24,15 @@ type Token struct {
 	Token string `json:"token"`
 }
 
-func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (string, error) {
+func (j *JudgeZeroClient) GetBatchToken(submissions []RequestsJudgeZeroApi) (string, error) {
 
 	// Define the URL with query parameters
 
-	baseURL := "https://judge0-ce.p.rapidapi.com/submissions/batch"
 	params := url.Values{}
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
 
-	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+	fullURL := fmt.Sprintf("%s/submissions/batch?%s", j.BaseURL, params.Encode())
 
 	payload := BatchSubmission{Submissions: submissions}
 	jsonDATA, err := json.Marshal(payload)
@@ -51,11 +50,12 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 	// Add Headers
 	req.Header.Set("content-type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+ApiKey)
+	req.Header.Set("x-rapidapi-host", "judge0-ce.p.rapidapi.com")
+	req.Header.Set("x-rapidapi-key", j.APIKey)
 
 	//do the request
 
-	resp, err := client.Do(req)
+	resp, err := j.HTTPClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("make request: %w", err)
 	}
@@ -96,15 +96,18 @@ func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (str
 	return "", fmt.Errorf("unexpected status %d: %s", resp.StatusCode, string(body))
 }
 
-func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
+func (r *BatchSubmission) GetBatchToken(submissions []RequestsJudgeZeroApi) (string, error) {
+	return DefaultJudgeZeroClient.GetBatchToken(submissions)
+}
+
+func (j *JudgeZeroClient) GetBatchResults(tokens string) (string, error) {
 
 	// Define the url with the get request parameters
-	responseURL := "https://judge0-ce.p.rapidapi.com/submissions/batch"
 	params := url.Values{}
 	params.Add("tokens", tokens)
 	params.Add("base64_encoded", "false")
 	params.Add("fields", "*")
-	fullURL := fmt.Sprintf("%s?%s", responseURL, params.Encode())
+	fullURL := fmt.Sprintf("%s/submissions/batch?%s", j.BaseURL, params.Encode())
 
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
@@ -113,9 +116,10 @@ func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
 	// Add the Headers
 
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Authorization", "Bearer "+ApiKey)
+	req.Header.Set("x-rapidapi-host", "judge0-ce.p.rapidapi.com")
+	req.Header.Set("x-rapidapi-key", j.APIKey)
 
-	resp, err := client.Do(req)
+	resp, err := j.HTTPClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("make get request: %w", err)
 	}
@@ -131,13 +135,12 @@ func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
 	return string(body), nil
 }
 
-func BatchJudgeZero(batch []RequestsJudgeZeroApi) ([]map[string]any, error) {
+func (r *BatchSubmission) GetBatchResults(tokens string) (string, error) {
+	return DefaultJudgeZeroClient.GetBatchResults(tokens)
+}
 
-	batchJudgeApi := BatchSubmission{
-		Submissions: batch,
-	}
-
-	tokens, err := batchJudgeApi.GetBatchToken(batch)
+func (j *JudgeZeroClient) BatchJudgeZero(batch []RequestsJudgeZeroApi) ([]map[string]any, error) {
+	tokens, err := j.GetBatchToken(batch)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %s", err)
 	}
@@ -153,7 +156,7 @@ func BatchJudgeZero(batch []RequestsJudgeZeroApi) ([]map[string]any, error) {
 
 out:
 	for i := 1; i < maxTries; i++ {
-		batchresults, err = batchJudgeApi.GetBatchResults(tokens)
+		batchresults, err = j.GetBatchResults(tokens)
 		if err != nil {
 			return nil, fmt.Errorf("error in batchJudgeApi.GetBatchResults(tokens)")
 		}
@@ -210,6 +213,10 @@ out:
 	})
 
 	return submissionsData, nil
+}
+
+func BatchJudgeZero(batch []RequestsJudgeZeroApi) ([]map[string]any, error) {
+	return DefaultJudgeZeroClient.BatchJudgeZero(batch)
 }
 
 // Helper function to convert gjson.Result to native Go types

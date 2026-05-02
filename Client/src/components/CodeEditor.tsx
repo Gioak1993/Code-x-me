@@ -1,189 +1,150 @@
 "use client";
 
 import { Editor } from "@monaco-editor/react";
-import { Dropdown, Button, useThemeMode, Badge } from "flowbite-react";
-import { useState, useEffect } from "react";
-import { Card } from "./Card.tsx";
+import { Badge, Button, Dropdown, useThemeMode } from "flowbite-react";
+import { useEffect, useState } from "react";
 import submitChallenge from "../api/sumbitChallenge.tsx";
-// import { useAuth } from "../api/authContext.tsx";
-import { useParams } from "react-router";
-import getChallenge from "../api/getChallengeId.tsx"
+import type { ChallengeTestResult } from "../api/sumbitChallenge.tsx";
+import { challengeLanguages } from "../constants/languages.ts";
+import { Card } from "./Card.tsx";
 
-
-
-
-
-
-//define the types for the languages
-type Language = {
-    name: string;
-    id: number;
-    function: string;
+type CodeEditorProps = {
+  challengeId: string;
+  starterCode?: Record<string, string>;
 };
 
-type Challenge = {
-  id: string;
-  problem_explanation: string;
-  problem_name: string;
-  difficulty: string;
-  constraints: string;
-};
+type ResultColor = "gray" | "green" | "red" | "yellow";
 
-const languagesList: Language[] = [
-    {
-      name: "Python",
-      id: 92,
-      function: `def solution():\n    # Write your solution here\n    pass`,
-    },
-    {
-      name: "Javascript",
-      id: 93,
-      function: `function solution() {\n    // Write your solution here\n}`,
-    },
-    {
-      name: "TypeScript",
-      id: 94,
-      function: `function solution(): void {\n    // Write your solution here\n}`,
-    },
-  ];
+const emptyStarterCode: Record<string, string> = {};
 
-export function CodeEditor() {
-
-  const { id } = useParams<{ id: string }>(); // Extract the challenge ID from the URL
-  const [challenge, setChallenge] = useState<Challenge | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // const { user } = useAuth(); 
-  const [result, setResult] = useState({
-    value: "Send yout code to see the result",
+export function CodeEditor({
+  challengeId,
+  starterCode = emptyStarterCode,
+}: CodeEditorProps) {
+  const defaultLanguage = challengeLanguages[0];
+  const defaultStarterCode =
+    starterCode[defaultLanguage.editorLanguage] ?? defaultLanguage.starterCode ?? "";
+  const [result, setResult] = useState<{
+    value: string;
+    color: ResultColor;
+    testResults: ChallengeTestResult[];
+  }>({
+    value: "Send your code to see the result",
     color: "gray",
-});
+    testResults: [],
+  });
 
-    //define the props for the editor
-    const [editor, setEditor] = useState({
-      defaultValue: "##create your code here",
-      languageId: 92,
-      defaultLanguage: "python",
-      value: "",
-      language: "",
-      theme: "",
+  const [editor, setEditor] = useState({
+    languageId: defaultLanguage.id,
+    value: defaultStarterCode,
+    language: defaultLanguage.editorLanguage,
+    theme: "",
+  });
+
+  const { computedMode } = useThemeMode();
+
+  useEffect(() => {
+    const updatedTheme = computedMode === "dark" ? "vs-dark" : "light";
+    setEditor((prevEditor) => ({ ...prevEditor, theme: updatedTheme }));
+  }, [computedMode]);
+
+  useEffect(() => {
+    setEditor((prevEditor) => ({
+      ...prevEditor,
+      value: getStarterCode(prevEditor.language),
+    }));
+    setResult({
+      value: "Send your code to see the result",
+      color: "gray",
+      testResults: [],
     });
-
-    const { computedMode } = useThemeMode();
-
-    useEffect(() => {
-      const updatedTheme = computedMode === "dark" ? "vs-dark" : "light";
-      setEditor((prevEditor) => ({ ...prevEditor, theme: updatedTheme }));
-    }, [computedMode]); // Re-run when `computedMode` changes
-
-    //set the state for changes on the code in the editor
+  }, [starterCode]);
 
   function handleCodeChange(newValue: string | undefined) {
     if (newValue !== undefined) {
-      setEditor({ ...editor, value: newValue });
+      setEditor((prevEditor) => ({ ...prevEditor, value: newValue }));
     }
   }
 
-// when a language is selected on the dropdown, the editor language change so it can give better recommendations
-// we also change the language id which is needed for the api
+  function handleLanguageChange(language: (typeof challengeLanguages)[number]) {
+    setEditor((prevEditor) => ({
+      ...prevEditor,
+      language: language.editorLanguage,
+      languageId: language.id,
+      value: getStarterCode(language.editorLanguage),
+    }));
+    setResult({
+      value: "Send your code to see the result",
+      color: "gray",
+      testResults: [],
+    });
+  }
 
-  function handleLanguageChange(
-    newLanguage: string | undefined,
-    newLanguageId: number | undefined,
-  ) {
-    if (newLanguage !== undefined && newLanguageId !== undefined) {
-      setEditor({
-        ...editor,
-        language: newLanguage.toLowerCase(),
-        languageId: newLanguageId,
+  function getStarterCode(editorLanguage: string) {
+    const language = challengeLanguages.find(
+      (candidate) => candidate.editorLanguage === editorLanguage,
+    );
+
+    return starterCode[editorLanguage] ?? language?.starterCode ?? "";
+  }
+
+  async function handleSubmit() {
+    const sourceCode = editor.value.trim();
+
+    if (!sourceCode) {
+      setResult({
+        value: "Please write code before running.",
+        color: "yellow",
+        testResults: [],
+      });
+      return;
+    }
+
+    try {
+      setResult({ value: "Running tests...", color: "gray", testResults: [] });
+      const response = await submitChallenge(
+        challengeId,
+        sourceCode,
+        editor.languageId,
+      );
+
+      setResult({
+        value: response.message,
+        color: response.passed ? "green" : "red",
+        testResults: response.results ?? [],
+      });
+    } catch (error) {
+      console.error(error);
+      setResult({
+        value: "Error submitting challenge.",
+        color: "red",
+        testResults: [],
       });
     }
   }
 
-  useEffect(() => {
-    const fetchChallenge = async () => {
-      if (!id) {
-        setError("No challenge ID provided in the URL.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const data = await getChallenge(id);
-        setChallenge(data);
-      } catch (err) {
-        setError("Failed to fetch challenge. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchChallenge();
-
-  }, [id]);
-
-  async function handleSubmit () {
-    //if the user is required then
-    // if (user && challenge)
-
-
-    if (challenge) {
-    const result = await submitChallenge(challenge.id, editor.value, editor.languageId)
-      if (result["message"] === "Challenge completed successfully") {
-        setResult({value: "Challenge completed successfully", color: "green"})
-      }
-      else {
-        setResult({value: "Challenge failed", color: "red"})
-      }
-    }
-    // else {  
-    //   setResult({value: "Please login to submit a challenge", color: "gray"})
-    // }
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!challenge) {
-    return <div>No challenge found.</div>;
-  }
-  // if (!user) {
-  //   return (
-  //     <Card className="m-2 grid grid-cols-1">
-  //       <span className="bg-white text-3xl font-light tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white">
-  //         Please login to submit a challenge
-  //       </span>
-  //     </Card>
-  //   );
-  // }
-
-  return(
+  return (
     <Card className="m-2 grid">
-        <Card className="m-2 flex">
-            <Dropdown
-            color="blue"
-            className="mx-1"
-            label={`Language: ${editor.language.toUpperCase() || "Select"}`}
+      <Card className="m-2 flex">
+        <Dropdown
+          color="blue"
+          className="mx-1"
+          label={`Language: ${editor.language || "Select"}`}
+        >
+          {challengeLanguages.map((language) => (
+            <Dropdown.Item
+              key={language.id}
+              onClick={() => handleLanguageChange(language)}
             >
-            {languagesList.map((language) => (
-                <Dropdown.Item
-                key={language.id}
-                onClick={() => handleLanguageChange(language.name, language.id)}
-                >
-                {language.name}
-                </Dropdown.Item>
-            ))}
-            </Dropdown>
-            <Button onClick={() => handleSubmit()} color="blue" className="mx-1">
-            Run
-            </Button>
-        </Card>
-      <Card className="mx-2 grid grid-cols-1 ">
+              {language.name}
+            </Dropdown.Item>
+          ))}
+        </Dropdown>
+        <Button onClick={handleSubmit} color="blue" className="mx-1">
+          Run
+        </Button>
+      </Card>
+      <Card className="mx-2 grid grid-cols-1">
         <Card className="m-2 grid grid-cols-1">
           <span className="bg-white text-3xl font-light tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white">
             Input
@@ -197,8 +158,41 @@ export function CodeEditor() {
             onChange={handleCodeChange}
           />
         </Card>
-        <Badge className= "w-fit" color={result.color}>{result.value}</Badge>
-    </Card>
+        <Badge className="w-fit" color={result.color}>
+          {result.value}
+        </Badge>
+        {result.testResults.length > 0 && (
+          <div className="mt-3 grid gap-2">
+            {result.testResults.map((testResult) => (
+              <Card
+                key={testResult.test_case}
+                className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+              >
+                <div className="mb-2 flex items-center gap-2">
+                  <Badge color={testResult.passed ? "green" : "red"}>
+                    Test {testResult.test_case}
+                  </Badge>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {testResult.comparison}
+                  </span>
+                </div>
+                {!testResult.passed && (
+                  <div className="grid gap-1 text-sm text-gray-900 dark:text-white">
+                    <p>
+                      <span className="font-semibold">Expected:</span>{" "}
+                      {testResult.expected}
+                    </p>
+                    <p>
+                      <span className="font-semibold">Actual:</span>{" "}
+                      {testResult.actual}
+                    </p>
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
+      </Card>
     </Card>
   );
 }

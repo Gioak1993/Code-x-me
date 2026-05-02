@@ -7,7 +7,7 @@ const Playground = React.lazy(() => import("./pages/Playground"));
 const Challenges = React.lazy(() => import("./pages/Challenges"));
 const LogIn = React.lazy(() => import("./pages/LogIn"));
 const SignUp = React.lazy(() => import("./pages/SignUp"));
-const Challenge = React.lazy(() => import("./pages/ChallengePage"));
+const Challenge = React.lazy(() => import("./pages/ChallengePage.tsx"));
 
 export default function App() {
   return (

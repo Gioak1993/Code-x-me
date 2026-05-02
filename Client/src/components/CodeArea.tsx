@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Card } from "./Card.tsx";
 import submitCode from "../api/submitCode.tsx";
 import { useThemeMode } from "flowbite-react";
+import { playgroundLanguages } from "../constants/languages.ts";
 
 const options = {
   readOnly: true, // Make the editor editable
@@ -15,12 +16,6 @@ const options = {
   },
   fontSize: 14, // Customize font size
   scrollBeyondLastLine: false, // Disable scrolling beyond the last line
-};
-
-//define the types for the languages
-type Language = {
-  name: string;
-  id: number;
 };
 
 export function CodeArea() {
@@ -42,119 +37,6 @@ export function CodeArea() {
     time: "",
   });
 
-  //define an array for the programming languages
-
-  const languagesList: Language[] = [
-    {
-      name: "Python",
-      id: 92,
-    },
-    {
-      name: "Javascript",
-      id: 93,
-    },
-    {
-      name: "TypeScript",
-      id: 94,
-    },
-    {
-      name: "Swift",
-      id: 83,
-    },
-    {
-      name: "Assembly",
-      id: 45,
-    },
-    {
-      name: "Bash",
-      id: 46,
-    },
-    {
-      name: "C",
-      id: 75,
-    },
-    {
-      name: "C++",
-      id: 76,
-    },
-    {
-      name: "C#",
-      id: 51,
-    },
-    {
-      name: "COBOL",
-      id: 77,
-    },
-    {
-      name: "D",
-      id: 56,
-    },
-    {
-      name: "Dart",
-      id: 90,
-    },
-    {
-      name: "Elixir",
-      id: 57,
-    },
-    {
-      name: "Erlang",
-      id: 58,
-    },
-    {
-      name: "F#",
-      id: 87,
-    },
-    {
-      name: "Fortran",
-      id: 59,
-    },
-    {
-      name: "Go",
-      id: 95,
-    },
-    {
-      name: "Grovy",
-      id: 88,
-    },
-    {
-      name: "Haskell",
-      id: 61,
-    },
-    {
-      name: "Kotlin",
-      id: 78,
-    },
-    {
-      name: "Lua",
-      id: 64,
-    },
-    {
-      name: "Objective-C",
-      id: 79,
-    },
-    {
-      name: "Octave",
-      id: 66,
-    },
-    {
-      name: "Perl",
-      id: 85,
-    },
-    {
-      name: "R",
-      id: 80,
-    },
-    {
-      name: "Ruby",
-      id: 72,
-    },
-    {
-      name: "Scala",
-      id: 81,
-    },
-  ];
-
   const { computedMode } = useThemeMode(); // Detect current theme mode
 
   useEffect(() => {
@@ -173,24 +55,34 @@ export function CodeArea() {
   // when a language is selected on the dropdown, the editor language change so it can give better recommendations
   // we also change the language id which is needed for the api
 
-  function handleLanguageChange(
-    newLanguage: string | undefined,
-    newLanguageId: number | undefined,
-  ) {
-    if (newLanguage !== undefined && newLanguageId !== undefined) {
-      setEditor({
-        ...editor,
-        language: newLanguage.toLowerCase(),
-        languageId: newLanguageId,
-      });
-    }
+  function handleLanguageChange(language: (typeof playgroundLanguages)[number]) {
+    setEditor({
+      ...editor,
+      language: language.editorLanguage,
+      languageId: language.id,
+    });
   }
 
   async function handleRunButton() {
+    const sourceCode = editor.value.trim();
+
+    if (!sourceCode) {
+      setOutput({ ...output, value: "Please write code before running." });
+      return;
+    }
+
     try {
-      const result = await submitCode(editor.value, editor.languageId);
+      const result = await submitCode(sourceCode, editor.languageId);
       console.log(result);
-      setOutput({ ...output, value: result.output + result.compile_output }); // this is what will be display in the output
+
+      const runOutput = [result.output, result.compile_output]
+        .filter((value) => value !== undefined && value !== null)
+        .join("");
+
+      setOutput({
+        ...output,
+        value: runOutput || result.message || "No output returned.",
+      });
     } catch (error) {
       console.log(error);
       setOutput({ ...output, value: "Error submitting code." });
@@ -205,10 +97,10 @@ export function CodeArea() {
           className="mx-1"
           label={`Language: ${editor.language || "Select"}`}
         >
-          {languagesList.map((language) => (
+          {playgroundLanguages.map((language) => (
             <Dropdown.Item
               key={language.id}
-              onClick={() => handleLanguageChange(language.name, language.id)}
+              onClick={() => handleLanguageChange(language)}
             >
               {language.name}
             </Dropdown.Item>
