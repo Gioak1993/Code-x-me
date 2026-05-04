@@ -1,5 +1,3 @@
-"use client" ;
-
 import { Button, Navbar, DarkThemeToggle, Badge } from "flowbite-react";
 import { useAuth } from "../api/authContext";
 import { Link } from 'react-router-dom';

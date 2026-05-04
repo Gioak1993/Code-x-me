@@ -1,10 +1,8 @@
-"use client";
-
 import Editor from "@monaco-editor/react";
 import { Dropdown, Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { Card } from "./Card.tsx";
-import submitCode from "../api/submitCode.tsx";
+import submitCode from "../api/submitCode.ts";
 import { useThemeMode } from "flowbite-react";
 import { playgroundLanguages } from "../constants/languages.ts";
 

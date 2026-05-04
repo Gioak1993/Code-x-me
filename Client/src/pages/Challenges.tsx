@@ -1,11 +1,10 @@
-"use-client";
-
 import { Layout } from "../layout/Layout.tsx";
-import getChallenges from "../api/getChallenges.tsx";
+import getChallenges from "../api/getChallenges.ts";
 import { Table, TableHead } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Pagination from "../components/Pagination.tsx";
+import { SEO } from "../components/SEO.tsx";
 
 type Challenge = {
   id: string;
@@ -51,6 +50,11 @@ const Challenges = () => {
   if (challenges.length === 0) {
     return (
       <Layout className="min-h-screen">
+        <SEO
+          title="Coding Challenges"
+          description="Browse CodexME coding challenges and practice solving programming problems."
+          path="/challenges"
+        />
         <h1 className="m-5 bg-white text-center text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white sm:text-5xl">
           Challenges
         </h1>
@@ -60,6 +64,11 @@ const Challenges = () => {
   }
   return (
     <Layout className="min-h-screen">
+      <SEO
+        title="Coding Challenges"
+        description="Browse CodexME coding challenges and practice solving programming problems."
+        path="/challenges"
+      />
       <h1 className="m-5 bg-white text-center text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white sm:text-5xl">
         Challenges
       </h1>

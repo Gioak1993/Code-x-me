@@ -28,9 +28,9 @@ var supportedChallengeLanguages = map[int]bool{
 }
 
 var languageTemplates = map[int]string{
-	92: `print(%s(%s))`,        // Python
-	93: `console.log(%s(%s));`, // JavaScript
-	94: `console.log(%s(%s));`, // TypeScript
+	92: `print(%s(%s))`,                                                                                                                             // Python
+	93: `const __codexme_result = %s(%s); console.log(typeof __codexme_result === "object" ? JSON.stringify(__codexme_result) : __codexme_result);`, // JavaScript
+	94: `const __codexme_result = %s(%s); console.log(typeof __codexme_result === "object" ? JSON.stringify(__codexme_result) : __codexme_result);`, // TypeScript
 }
 
 func BuildExecutionCode(languageID int, sourceCode string, inputs []any) string {

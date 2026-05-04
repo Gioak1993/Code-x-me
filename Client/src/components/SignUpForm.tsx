@@ -1,9 +1,7 @@
-"use client";
-
 // import { Checkbox } from "flowbite-react";
 import { Button, Label, TextInput } from "flowbite-react";
 import { useState } from "react";
-import submitSignUpForm from "../api/signUpRequest.tsx"
+import submitSignUpForm from "../api/signUpRequest.ts"
 import { useNavigate, Link } from "react-router-dom";
 
 export function RegisterForm() {

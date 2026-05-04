@@ -62,9 +62,30 @@ func TestBuildExecutionCodeFormatsJavaScriptLiterals(t *testing.T) {
 		},
 	)
 
-	expectedCall := `console.log(solution("hello",[1,"two"],{"count":2,"name":"gio"},true,null));`
+	expectedCall := `const __codexme_result = solution("hello",[1,"two"],{"count":2,"name":"gio"},true,null);`
 	if !strings.Contains(code, expectedCall) {
 		t.Fatalf("expected JavaScript literals in call %s, got %s", expectedCall, code)
+	}
+
+	if !strings.Contains(code, `JSON.stringify(__codexme_result)`) {
+		t.Fatalf("expected JavaScript wrapper to stringify object results, got %s", code)
+	}
+}
+
+func TestBuildExecutionCodeFormatsTypeScriptWithJSONStringifyWrapper(t *testing.T) {
+	code := BuildExecutionCode(
+		94,
+		"function solution(nums: number[]): number[] { return nums; }",
+		[]any{[]any{1, 2, 3}},
+	)
+
+	expectedCall := `const __codexme_result = solution([1,2,3]);`
+	if !strings.Contains(code, expectedCall) {
+		t.Fatalf("expected TypeScript literals in call %s, got %s", expectedCall, code)
+	}
+
+	if !strings.Contains(code, `JSON.stringify(__codexme_result)`) {
+		t.Fatalf("expected TypeScript wrapper to stringify object results, got %s", code)
 	}
 }
 

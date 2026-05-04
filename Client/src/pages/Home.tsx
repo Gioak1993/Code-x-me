@@ -1,9 +1,15 @@
 import { Layout } from "../layout/Layout.tsx";
 import { Hero } from "../components/Hero.tsx";
+import { SEO } from "../components/SEO.tsx";
 
 const Home = () => {
   return (
     <main>
+      <SEO
+        title="CodexME - Learn to Code with Challenges"
+        description="Practice programming with coding challenges and an online code playground for Python, JavaScript, and TypeScript."
+        path="/"
+      />
       <Layout className="">
         <Hero></Hero>
         <p className="m-5 mx-auto max-w-5xl text-center text-xl text-black dark:text-white">

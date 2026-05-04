@@ -1,11 +1,10 @@
-"use-client";
-
 import getChallenge from "../api/getChallengeId";
 // import { useAuth } from "../api/authContext";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { Card } from "../components/Card";
 import { CodeEditor } from "../components/CodeEditor";
+import { SEO } from "../components/SEO";
 import { Layout } from "../layout/Layout";
 
 type Challenge = {
@@ -108,6 +107,12 @@ const ChallengePage = () => {
   if (loading) {
     return (
       <Layout className="">
+        <SEO
+          title="Loading Coding Challenge"
+          description="Loading a CodexME coding challenge."
+          path={id ? `/challenge/${id}` : "/challenges"}
+          noIndex
+        />
         <h1 className="text-3xl text-gray-900 dark:text-white">Loading...</h1>
       </Layout>
     );
@@ -116,6 +121,12 @@ const ChallengePage = () => {
   if (error) {
     return (
       <Layout className="">
+        <SEO
+          title="Challenge Not Available"
+          description="This CodexME challenge is not currently available."
+          path={id ? `/challenge/${id}` : "/challenges"}
+          noIndex
+        />
         <h1 className="text-3xl text-gray-900 dark:text-white">{error}</h1>
       </Layout>
     );
@@ -124,6 +135,12 @@ const ChallengePage = () => {
   if (!challenge) {
     return (
       <Layout className="">
+        <SEO
+          title="Challenge Not Found"
+          description="The requested CodexME coding challenge could not be found."
+          path={id ? `/challenge/${id}` : "/challenges"}
+          noIndex
+        />
         <h1 className="text-3xl text-gray-900 dark:text-white">No challenge found.</h1>
       </Layout>
     );
@@ -131,11 +148,17 @@ const ChallengePage = () => {
 
   return (
     <Layout className="">
+      <SEO
+        title={`${challenge.problem_name} Coding Challenge`}
+        description={challenge.problem_explanation}
+        path={`/challenge/${challenge.id}`}
+        type="article"
+      />
       <h1 className="m-5 bg-white text-center text-xl font-extrabold leading-none tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white sm:text-5xl">
         {challenge?.problem_name}
       </h1>
-      <Card className="mx-auto grid max-w-7xl grid-cols-1 md:grid-cols-2">
-        <Card className="m-2 rounded-lg border-2 border-solid border-gray-200 p-3 dark:border-gray-800">
+      <Card className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-4 md:grid-cols-2">
+        <Card className="min-w-0 rounded-lg border-2 border-solid border-gray-200 p-3 dark:border-gray-800">
           <h3 className="my-2 text-xl text-gray-900 dark:text-white">
             Problem Explanation
           </h3>
@@ -146,7 +169,7 @@ const ChallengePage = () => {
           <h3 className="my-2 text-xl text-gray-900 dark:text-white">
             Function Signature
           </h3>
-          <code className="block rounded bg-gray-100 p-2 text-sm text-gray-900 dark:bg-gray-800 dark:text-white">
+          <code className="block overflow-x-auto rounded bg-gray-100 p-2 text-sm text-gray-900 dark:bg-gray-800 dark:text-white">
             {formatFunctionSignature(challenge.function_signature)}
           </code>
           <h3 className="my-2 text-xl text-gray-900 dark:text-white">
@@ -156,7 +179,7 @@ const ChallengePage = () => {
             {getChallengeExamples(challenge).map((example, index) => (
               <Card
                 key={`${example.input}-${index}`}
-                className="rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
+                className="min-w-0 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800"
               >
                 <h4 className="mb-2 text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                   Example {index + 1}
@@ -164,14 +187,14 @@ const ChallengePage = () => {
                 <div className="grid gap-2 text-sm text-gray-900 dark:text-white">
                   <div>
                     <span className="font-semibold">Input</span>
-                    <pre className="mt-1 overflow-x-auto rounded bg-white p-2 font-mono text-xs dark:bg-gray-900">
+                    <pre className="mt-1 max-w-full whitespace-pre-wrap break-words rounded bg-white p-2 font-mono text-xs dark:bg-gray-900">
                       {example.input}
                     </pre>
                   </div>
                   {example.output && (
                     <div>
                       <span className="font-semibold">Output</span>
-                      <pre className="mt-1 overflow-x-auto rounded bg-white p-2 font-mono text-xs dark:bg-gray-900">
+                      <pre className="mt-1 max-w-full whitespace-pre-wrap break-words rounded bg-white p-2 font-mono text-xs dark:bg-gray-900">
                         {example.output}
                       </pre>
                     </div>
@@ -197,7 +220,7 @@ const ChallengePage = () => {
             {challenge?.difficulty}
           </p>
         </Card>
-        <Card className="m-2 grid rounded-lg border-2 border-solid border-gray-200 p-3 dark:border-gray-800">
+        <Card className="min-w-0 rounded-lg border-2 border-solid border-gray-200 p-3 dark:border-gray-800">
           <h4 className="my-2 text-xl text-gray-900 dark:text-white">
             Implement the function below using the required signature.
           </h4>

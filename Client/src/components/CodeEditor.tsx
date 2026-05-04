@@ -1,10 +1,8 @@
-"use client";
-
 import { Editor } from "@monaco-editor/react";
 import { Badge, Button, Dropdown, useThemeMode } from "flowbite-react";
 import { useEffect, useState } from "react";
-import submitChallenge from "../api/sumbitChallenge.tsx";
-import type { ChallengeTestResult } from "../api/sumbitChallenge.tsx";
+import submitChallenge from "../api/submitChallenge.ts";
+import type { ChallengeTestResult } from "../api/submitChallenge.ts";
 import { challengeLanguages } from "../constants/languages.ts";
 import { Card } from "./Card.tsx";
 
@@ -123,12 +121,15 @@ export function CodeEditor({
     }
   }
 
+  const passedTests = result.testResults.filter((testResult) => testResult.passed);
+  const failedTests = result.testResults.filter((testResult) => !testResult.passed);
+
   return (
-    <Card className="m-2 grid">
-      <Card className="m-2 flex">
+    <Card className="mt-4 flex flex-col gap-4">
+      <Card className="flex h-fit items-start gap-2">
         <Dropdown
           color="blue"
-          className="mx-1"
+          className="h-fit"
           label={`Language: ${editor.language || "Select"}`}
         >
           {challengeLanguages.map((language) => (
@@ -140,18 +141,18 @@ export function CodeEditor({
             </Dropdown.Item>
           ))}
         </Dropdown>
-        <Button onClick={handleSubmit} color="blue" className="mx-1">
+        <Button onClick={handleSubmit} color="blue" className="h-fit">
           Run
         </Button>
       </Card>
-      <Card className="mx-2 grid grid-cols-1">
-        <Card className="m-2 grid grid-cols-1">
-          <span className="bg-white text-3xl font-light tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white">
+      <Card className="grid grid-cols-1 gap-3">
+        <Card className="grid grid-cols-1 gap-2">
+          <span className="bg-white text-2xl font-light tracking-tight text-gray-900 dark:bg-gray-900 dark:text-white">
             Input
           </span>
           <Editor
-            className="min-h-full w-max"
-            height="50vh"
+            className="w-full overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700"
+            height="320px"
             language={editor.language}
             value={editor.value}
             theme={editor.theme}
@@ -162,34 +163,49 @@ export function CodeEditor({
           {result.value}
         </Badge>
         {result.testResults.length > 0 && (
-          <div className="mt-3 grid gap-2">
-            {result.testResults.map((testResult) => (
-              <Card
-                key={testResult.test_case}
-                className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
-              >
-                <div className="mb-2 flex items-center gap-2">
-                  <Badge color={testResult.passed ? "green" : "red"}>
-                    Test {testResult.test_case}
-                  </Badge>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {testResult.comparison}
-                  </span>
-                </div>
-                {!testResult.passed && (
-                  <div className="grid gap-1 text-sm text-gray-900 dark:text-white">
-                    <p>
-                      <span className="font-semibold">Expected:</span>{" "}
-                      {testResult.expected}
-                    </p>
-                    <p>
-                      <span className="font-semibold">Actual:</span>{" "}
-                      {testResult.actual}
-                    </p>
+          <div className="mt-3 grid gap-3">
+            {failedTests.length === 0 ? (
+              <Card className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900 dark:bg-green-950">
+                <p className="text-sm font-semibold text-green-900 dark:text-green-100">
+                  All {result.testResults.length} tests passed.
+                </p>
+              </Card>
+            ) : (
+              <>
+                {passedTests.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {passedTests.map((testResult) => (
+                      <Badge key={testResult.test_case} color="green">
+                        Test {testResult.test_case}
+                      </Badge>
+                    ))}
                   </div>
                 )}
-              </Card>
-            ))}
+                {failedTests.map((testResult) => (
+                  <Card
+                    key={testResult.test_case}
+                    className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950"
+                  >
+                    <div className="mb-2 flex items-center gap-2">
+                      <Badge color="red">Test {testResult.test_case}</Badge>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {testResult.comparison}
+                      </span>
+                    </div>
+                    <div className="grid gap-1 text-sm text-gray-900 dark:text-white">
+                      <p>
+                        <span className="font-semibold">Expected:</span>{" "}
+                        {testResult.expected}
+                      </p>
+                      <p>
+                        <span className="font-semibold">Actual:</span>{" "}
+                        {testResult.actual}
+                      </p>
+                    </div>
+                  </Card>
+                ))}
+              </>
+            )}
           </div>
         )}
       </Card>

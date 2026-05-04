@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -26,87 +25,63 @@ type User struct {
 }
 
 func RequireAuth(c *gin.Context) {
-
-	// get the cookie of req
-
 	tokenString, err := c.Cookie("Authorization")
-
 	if err != nil {
-		fmt.Println("no cookie found")
-		c.AbortWithStatus(http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization cookie is required"})
 		return
 	}
 
-	// Decode/validate it
-
-	// Parse takes the token string and a function for looking up the key. The latter is especially
-	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
-	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
-	// to the callback, providing flexibility.
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 
-		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 		return []byte(os.Getenv("JWT_SECRET")), nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization token"})
+		return
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims["sub"], claims["exp"])
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization token"})
+		return
+	}
 
-		//check the exp
+	expiresAt, err := claims.GetExpirationTime()
+	if err != nil || expiresAt == nil || time.Now().After(expiresAt.Time) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization token has expired"})
+		return
+	}
 
-		if float64(time.Now().Unix()) < claims["exp"].(float64) {
+	sub, err := claims.GetSubject()
+	if err != nil || sub == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization token is missing a subject"})
+		return
+	}
 
-			// find the user with the token
+	id, err := primitive.ObjectIDFromHex(sub)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authorization token subject is invalid"})
+		return
+	}
 
-			var user User
+	var user User
+	coll := initializers.DBClient.Database("codexme").Collection("users")
+	filter := bson.D{{Key: "_id", Value: id}}
 
-			sub, ok := claims["sub"].(string)
-			if !ok {
-				log.Fatal("sub claim is not a string")
-			}
-
-			id, err := primitive.ObjectIDFromHex(sub)
-			if err != nil {
-				log.Fatal("Invalid ObjectID:", err)
-			}
-
-			coll := initializers.DBClient.Database("codexme").Collection("users")
-
-			// Creates a query filter to match documents with the email
-
-			filter := bson.D{{Key: "_id", Value: id}}
-
-			err = coll.FindOne(context.TODO(), filter).Decode(&user)
-
-			// Prints a message if no documents are matched or if any
-			// other errors occur during the operation
-			if err != nil {
-				if err == mongo.ErrNoDocuments {
-					c.AbortWithStatus(http.StatusUnauthorized)
-					return
-				}
-				panic(err)
-			}
-
-			//attacht to req
-
-			c.Set("user", user)
-
-			//continue
-
-			c.Next()
-
+	err = coll.FindOne(context.TODO(), filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "user was not found"})
+			return
 		}
 
-	} else {
-		c.AbortWithStatus(http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "error validating user"})
+		return
 	}
 
+	c.Set("user", user)
+	c.Next()
 }
